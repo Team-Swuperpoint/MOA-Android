@@ -191,4 +191,16 @@
         <item name="android:textSize">10sp</item>
         <item name="android:lineHeight">18sp</item>
     </style>
+
+    <!-- Bottom Navigation Font Style -->
+    <style name="bnv_unselected_text">
+        <item name="fontFamily">@font/pretendard_semibold</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/gray_500</item>
+    </style>
+    <style name="bnv_selected_text">
+        <item name="fontFamily">@font/pretendard_semibold</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/main_500</item>
+    </style>
 </resources>

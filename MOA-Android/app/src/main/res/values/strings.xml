@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">MOA-Android</string>
+    <string name="app_name">모아</string>
+
+    <!-- Bnv 제목 -->
+    <string name="bnv_menu_1">홈</string>
+    <string name="bnv_menu_2">모임</string>
+    <string name="bnv_menu_3">타임라인</string>
+    <string name="bnv_menu_4">마이페이지</string>
 </resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BNV 메뉴 설정 -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/frm_home"
+        android:enabled="true"
+        android:icon="@drawable/ic_menu_home_28"
+        android:title="@string/bnv_menu_1"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/frm_group"
+        android:enabled="true"
+        android:icon="@drawable/ic_menu_group_28"
+        android:title="@string/bnv_menu_2"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/frm_timeline"
+        android:enabled="true"
+        android:icon="@drawable/ic_menu_timeline_28"
+        android:title="@string/bnv_menu_3"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/frm_mypage"
+        android:enabled="true"
+        android:icon="@drawable/ic_menu_mypage_28"
+        android:title="@string/bnv_menu_4"
+        app:showAsAction="ifRoom"/>
+</menu>

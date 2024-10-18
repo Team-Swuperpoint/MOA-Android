@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/frm_home">
+
+    <!-- 홈 -->
+    <fragment
+        android:id="@+id/frm_home"
+        android:name="com.swuperpoint.moa_android.view.main.home.HomeFragment"
+        android:label="frm_home"
+        tools:layout="@layout/fragment_home">
+    </fragment>
+
+    <!-- 모임 -->
+    <fragment
+        android:id="@+id/frm_group"
+        android:name="com.swuperpoint.moa_android.view.main.group.GroupFragment"
+        android:label="frm_group"
+        tools:layout="@layout/fragment_group">
+    </fragment>
+
+    <!-- 타임라인 -->
+    <fragment
+        android:id="@+id/frm_timeline"
+        android:name="com.swuperpoint.moa_android.view.main.timeline.TimelineFragment"
+        android:label="frm_timeline"
+        tools:layout="@layout/fragment_timeline">
+    </fragment>
+
+    <!-- 마이페이지 -->
+    <fragment
+        android:id="@+id/frm_mypage"
+        android:name="com.swuperpoint.moa_android.view.main.mypage.MypageFragment"
+        android:label="frm_mypage"
+        tools:layout="@layout/fragment_mypage">
+    </fragment>
+</navigation>
