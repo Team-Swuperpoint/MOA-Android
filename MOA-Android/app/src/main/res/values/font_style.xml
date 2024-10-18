@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Headline - Pretendard -->
+    <style name="Pretendard_HO">
+        <item name="fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:lineHeight">42sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Pretendard_H1">
+        <item name="fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:lineHeight">40sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Pretendard_H2">
+        <item name="fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:lineHeight">38sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Pretendard_H3">
+        <item name="fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:lineHeight">34sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Pretendard_H4">
+        <item name="fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:lineHeight">28sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Pretendard_H5">
+        <item name="fontFamily">@font/pretendard_semibold</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:lineHeight">24sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+
+    <!-- Headline - OnGothic -->
+    <style name="Ongothic_HO">
+        <item name="fontFamily">@font/koddi_ud_ongothic_extrabold</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:lineHeight">42sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Ongothic_H1">
+        <item name="fontFamily">@font/koddi_ud_ongothic_extrabold</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:lineHeight">40sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Ongothic_H2">
+        <item name="fontFamily">@font/koddi_ud_ongothic_extrabold</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:lineHeight">38sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Ongothic_H3">
+        <item name="fontFamily">@font/koddi_ud_ongothic_extrabold</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:lineHeight">34sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Ongothic_H4">
+        <item name="fontFamily">@font/koddi_ud_ongothic_extrabold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:lineHeight">28sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Ongothic_H5">
+        <item name="fontFamily">@font/koddi_ud_ongothic_bold</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:lineHeight">24sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+
+    <!-- Title - Pretendard -->
+    <style name="Pretendard_Title1">
+        <item name="fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:lineHeight">24sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Pretendard_Title2">
+        <item name="fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">22sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Pretendard_SubTitle1">
+        <item name="fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:lineHeight">24sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Pretendard_SubTitle2">
+        <item name="fontFamily">@font/pretendard_semibold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">22sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+
+    <!-- Title - OnGothic -->
+    <style name="Ongothic_Title1">
+        <item name="fontFamily">@font/koddi_ud_ongothic_extrabold</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:lineHeight">24sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Ongothic_Title2">
+        <item name="fontFamily">@font/koddi_ud_ongothic_extrabold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">22sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Ongothic_SubTitle1">
+        <item name="fontFamily">@font/koddi_ud_ongothic_regular</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:lineHeight">24sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+    <style name="Ongothic_SubTitle2">
+        <item name="fontFamily">@font/koddi_ud_ongothic_bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">22sp</item>
+        <item name="android:letterSpacing">-0.01875</item>
+    </style>
+
+    <!-- Body - Pretendard -->
+    <style name="Pretendard_Body1">
+        <item name="fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">24sp</item>
+    </style>
+    <style name="Pretendard_Body2">
+        <item name="fontFamily">@font/pretendard_regular</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">20sp</item>
+    </style>
+    <style name="Pretendard_Popup1">
+        <item name="fontFamily">@font/pretendard_bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">24sp</item>
+    </style>
+    <style name="Pretendard_Popup2">
+        <item name="fontFamily">@font/pretendard_medium</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">24sp</item>
+    </style>
+    <style name="Pretendard_Caption1">
+        <item name="fontFamily">@font/pretendard_medium</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineHeight">18sp</item>
+    </style>
+    <style name="Pretendard_Caption2">
+        <item name="fontFamily">@font/pretendard_medium</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:lineHeight">18sp</item>
+    </style>
+
+    <!-- Body - OnGothic -->
+    <style name="Ongothic_Body1">
+        <item name="fontFamily">@font/koddi_ud_ongothic_regular</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">24sp</item>
+    </style>
+    <style name="Ongothic_Body2">
+        <item name="fontFamily">@font/koddi_ud_ongothic_regular</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">20sp</item>
+    </style>
+    <style name="Ongothic_Popup1">
+        <item name="fontFamily">@font/koddi_ud_ongothic_extrabold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">24sp</item>
+    </style>
+    <style name="Ongothic_Popup2">
+        <item name="fontFamily">@font/koddi_ud_ongothic_bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">24sp</item>
+    </style>
+    <style name="Ongothic_Caption1">
+        <item name="fontFamily">@font/koddi_ud_ongothic_bold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineHeight">18sp</item>
+    </style>
+    <style name="Ongothic_Caption2">
+        <item name="fontFamily">@font/koddi_ud_ongothic_bold</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:lineHeight">18sp</item>
+    </style>
+</resources>
