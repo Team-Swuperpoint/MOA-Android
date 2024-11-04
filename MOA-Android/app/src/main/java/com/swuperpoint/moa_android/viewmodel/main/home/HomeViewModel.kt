@@ -19,10 +19,12 @@ class HomeViewModel : ViewModel() {
     var nickname: LiveData<String> = _homeResponse.map { it.nickname }
 
     // 모임 리스트
-    var groupList = MutableLiveData<ArrayList<HomeGroupItem>>()
+    var groupList = MutableLiveData<ArrayList<HomeGroupItem>>().apply {
+        value = null
+    }
 
     // 1개 모임 정보
-    var gatheringInfo = MutableLiveData<HomeGatheringItem>()
+    var gatheringInfo = MutableLiveData<HomeGatheringItem?>()
 
     init {
         // DTO -> Entity로 변환
@@ -36,15 +38,17 @@ class HomeViewModel : ViewModel() {
                 )
             } ?: emptyList()
 
-            val gathering = HomeGatheringItem(
-                gatheringId = response.groupInfo.gatheringId,
-                groupName = response.groupInfo.groupName,
-                gatheringName = response.groupInfo.gatheringName,
-                date = response.groupInfo.date,
-                location = response.groupInfo.location,
-                dDay = response.groupInfo.dDay,
-                memberProfileList = response.groupInfo.memberProfileList
-            )
+            val gathering = response.groupInfo?.let {
+                HomeGatheringItem(
+                    gatheringId = it.gatheringId,
+                    groupName = it.groupName,
+                    gatheringName = it.gatheringName,
+                    date = it.date,
+                    location = it.location,
+                    dDay = it.dDay,
+                    memberProfileList = it.memberProfileList
+                )
+            }
 
             groupList.value = ArrayList(items)
             gatheringInfo.value = gathering

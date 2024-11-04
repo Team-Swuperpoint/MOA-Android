@@ -80,5 +80,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         homeViewModel.nickname.observe(viewLifecycleOwner) { nickname ->
             binding.tvHomeNickname.text = nickname
         }
+
+        // 모임 정보 업데이트 관찰
+        homeViewModel.gatheringInfo.observe(viewLifecycleOwner) { gatheringInfo ->
+            binding.tvHomeGroupName.text = gatheringInfo?.groupName ?: ""
+            binding.tvHomeGatheringName.text = gatheringInfo?.gatheringName ?: ""
+            binding.tvHomeTime.text = gatheringInfo?.date ?: ""
+            binding.tvHomeLocation.text = gatheringInfo?.location ?: ""
+            binding.tvHomeDday.text = gatheringInfo?.dDay.toString() ?: ""
+        }
     }
 }

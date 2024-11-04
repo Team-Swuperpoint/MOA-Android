@@ -6,7 +6,7 @@ import com.swuperpoint.moa_android.view.main.home.data.HomeGatheringItem
 data class HomeResponse(
     val nickname: String,
     var groupList: ArrayList<HomeGroupListResponse>?,
-    var groupInfo: HomeGatheringItem
+    var groupInfo: HomeGatheringItem?
 )
 
 /* 다가오는 모임 리스트 */
