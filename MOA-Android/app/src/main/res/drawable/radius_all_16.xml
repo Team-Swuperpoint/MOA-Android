@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 모든 모서리가 16dp인 도형 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="16dp"/>
+    <solid android:color="@color/white"/>
+</shape>

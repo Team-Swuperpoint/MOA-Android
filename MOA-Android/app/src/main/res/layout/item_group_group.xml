@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="group"
+            type="com.swuperpoint.moa_android.view.main.group.data.GroupItem" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/lLayout_item_group_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_group_card"
+        android:paddingTop="24dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="34dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_item_group_group_emoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Ongothic_H4"
+                android:text="@{group.emoji}"
+                android:textColor="@color/black"
+                android:paddingVertical="12dp"
+                android:paddingHorizontal="12dp"
+                android:background="@drawable/radius_all_16"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{group.groupName}"
+                        android:textColor="@color/gray_900"
+                        style="@style/Ongothic_H4"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_person_16"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="2dp"/>
+
+                    <TextView
+                        android:id="@+id/tv_item_group_group_member_num"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/gray_800"
+                        style="@style/Pretendard_Caption1"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="최근모임"
+                        android:textColor="@color/gray_600"
+                        style="@style/Pretendard_Caption1"
+                        android:layout_marginEnd="4dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{group.recentGathering}"
+                        android:textColor="@color/gray_800"
+                        style="@style/Pretendard_Caption1"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_right_24"
+                android:background="@drawable/radius_all_24"
+                android:backgroundTint="@color/main_50"
+                android:padding="8dp"
+                android:layout_marginStart="16dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</layout>
