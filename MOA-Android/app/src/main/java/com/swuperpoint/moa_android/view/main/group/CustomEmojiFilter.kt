@@ -13,6 +13,15 @@ class CustomEmojiFilter: InputFilter {
         dstart: Int,
         dend: Int
     ): CharSequence? {
+        // 입력된 값이 있는 지 확인
+        val currentText = dest?.toString() ?: ""
+
+        // 1개의 이모지만 입력할 수 있도록 제한
+        if (currentText.isNotEmpty()) {
+            return ""
+        }
+
+        // 이모지만 입력할 수 있도록 제한
         for (i in start until end) {
             if (source != null) {
                 val type = Character.getType(source[i]).toByte()
@@ -21,6 +30,8 @@ class CustomEmojiFilter: InputFilter {
                 }
             }
         }
+
+        // 이모지 반환
         return source
     }
 }

@@ -31,10 +31,13 @@
     <fragment
         android:id="@+id/frm_create_group"
         android:name="com.swuperpoint.moa_android.view.main.group.CreateGroupFragment"
-        android:label="CreateGroupFragment"
+        android:label="frm_create_group"
         tools:layout="@layout/fragment_create_group">
         <action
             android:id="@+id/action_createGroupFrm_to_groupFrm"
+            app:destination="@id/frm_group"
+            app:popUpTo="@id/frm_create_group"
+            app:popUpToInclusive="true"/>
             app:destination="@id/frm_group"/>
     </fragment>
 
