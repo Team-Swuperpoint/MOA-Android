@@ -14,13 +14,63 @@
         tools:layout="@layout/fragment_home">
     </fragment>
 
-    <!-- 모임 -->
+    <!-- 그룹 -->
     <fragment
         android:id="@+id/frm_group"
         android:name="com.swuperpoint.moa_android.view.main.group.GroupFragment"
         android:label="frm_group"
         tools:layout="@layout/fragment_group">
+        <action
+            android:id="@+id/action_groupFrm_to_groupBottomSheetFrm"
+            app:destination="@+id/sheet_group"
+            app:enterAnim="@anim/anim_slide_in_up"
+            app:popExitAnim="@anim/anim_slide_out_down"/>
     </fragment>
+
+    <!-- 그룹 추가하기 -->
+    <fragment
+        android:id="@+id/frm_create_group"
+        android:name="com.swuperpoint.moa_android.view.main.group.CreateGroupFragment"
+        android:label="CreateGroupFragment"
+        tools:layout="@layout/fragment_create_group">
+        <action
+            android:id="@+id/action_createGroupFrm_to_groupFrm"
+            app:destination="@id/frm_group"/>
+    </fragment>
+
+    <!-- 그룹 바텀 시트 -->
+    <dialog
+        android:id="@+id/sheet_group"
+        android:name="com.swuperpoint.moa_android.view.main.group.GroupBottomSheetFragment"
+        android:label="GroupBottomSheetFragment">
+        <action
+            android:id="@+id/action_groupBottomSheetFrm_to_groupFrm"
+            app:destination="@id/frm_group"
+            app:popUpTo="@id/frm_group"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_groupBottomSheetFrm_to_groupJoinBottomSheetFrm"
+            app:destination="@+id/sheet_group_join"
+            app:enterAnim="@anim/anim_slide_in_up"
+            app:popExitAnim="@anim/anim_slide_out_down"/>
+        <action
+            android:id="@+id/action_groupBottomSheetFrm_to_createGroupFrm"
+            app:destination="@id/frm_create_group"
+            app:popUpTo="@id/sheet_group"
+            app:popUpToInclusive="true"/>
+    </dialog>
+
+    <!-- 그룹 들어가기 바텀 시트 -->
+    <dialog
+        android:id="@+id/sheet_group_join"
+        android:name="com.swuperpoint.moa_android.view.main.group.GroupJoinBottomSheetFragment"
+        android:label="GroupJoinBottomSheetFragment">
+        <action
+            android:id="@+id/action_groupJoinBottomSheetFrm_to_groupFrm"
+            app:destination="@id/frm_group"
+            app:popUpTo="@id/frm_group"
+            app:popUpToInclusive="true"/>
+    </dialog>
 
     <!-- 타임라인 -->
     <fragment

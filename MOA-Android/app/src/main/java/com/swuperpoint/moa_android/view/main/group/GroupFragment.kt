@@ -1,6 +1,7 @@
 package com.swuperpoint.moa_android.view.main.group
 
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.data.remote.model.group.GroupResponse
 import com.swuperpoint.moa_android.databinding.FragmentGroupBinding
@@ -39,6 +40,13 @@ class GroupFragment : BaseFragment<FragmentGroupBinding>(FragmentGroupBinding::i
         // 그룹 클릭 이벤트
         adapter.onItemClickListener = { position ->
             showToast("$position 번째 그룹 클릭!")
+        }
+
+        // FAB 버튼 클릭 이벤트
+        binding.fabGroupAdd.setOnClickListener {
+            // 그룹 바텀 시트 띄우기
+            val actionToGroupBottomSheet = GroupFragmentDirections.actionGroupFrmToGroupBottomSheetFrm()
+            findNavController().navigate(actionToGroupBottomSheet)
         }
     }
 
