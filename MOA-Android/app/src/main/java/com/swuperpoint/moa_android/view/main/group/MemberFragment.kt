@@ -75,6 +75,7 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
             viewModel.deleteMember(position)
             adapter.showDeleteBtn(false)
             binding.tvMemberNum.text = adapter.itemCount.toString()
+            binding.tvMemberEdit.text = "편집"
             showToast("그룹원을 삭제했습니다")
         }
     }
