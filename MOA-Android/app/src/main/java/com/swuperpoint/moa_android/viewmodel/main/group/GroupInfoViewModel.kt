@@ -47,7 +47,8 @@ class GroupInfoViewModel: ViewModel() {
             MemberItem(
                 memberId = member.memberId,
                 profileImgURL = member.profileImgURL,
-                memberName = member.memberName
+                memberName = member.memberName,
+                isEdit = false
             )
         }
     }

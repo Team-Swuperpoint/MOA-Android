@@ -15,10 +15,12 @@ import com.swuperpoint.moa_android.view.main.group.adapter.GroupGatheringRVAdapt
 import com.swuperpoint.moa_android.view.main.group.adapter.GroupMemberRVAdapter
 import com.swuperpoint.moa_android.viewmodel.main.group.GroupInfoViewModel
 
+/* 그룹 정보 화면 */
 class GroupInfoFragment : BaseFragment<FragmentGroupInfoBinding>(FragmentGroupInfoBinding::inflate) {
     private val viewModel: GroupInfoViewModel by viewModels() // 뷰모델
     private var memberAdapter = GroupMemberRVAdapter() // 그룹원 리스트 어댑터
     private var gatheringAdapter = GroupGatheringRVAdapter() // 모임 리스트 어댑터
+    private var groupId: Long = 0 // 그룹 id
 
     override fun initViewCreated() {
         // 바텀 네비게이션 숨기기
@@ -31,9 +33,10 @@ class GroupInfoFragment : BaseFragment<FragmentGroupInfoBinding>(FragmentGroupIn
         changeStatusbarColor(R.color.gray_200, isLightMode = true)
 
         val args: GroupInfoFragmentArgs by navArgs()
+        groupId = args.groupId
         // TODO: 전달받은 groupId(args.groupId)로 파이어베이스에서 그룹 정보 검색 -> 전달받은 정보로 화면 구성
         // 데이터 로드
-        viewModel.fetchGroupInfo(args.groupId)
+        viewModel.fetchGroupInfo(groupId)
 
         // LiveData 관찰
         observeViewModel()
@@ -105,7 +108,7 @@ class GroupInfoFragment : BaseFragment<FragmentGroupInfoBinding>(FragmentGroupIn
         // 더보기 버튼 클릭 이벤트
         binding.iBtnGroupInfoMore.setOnClickListener {
             // 그룹 더보기 바텀 시트 띄우기
-            val actionToGroupMoreBottomSheet = GroupInfoFragmentDirections.actionGroupInfoFrmToGroupMoreBottomSheetFrm()
+            val actionToGroupMoreBottomSheet = GroupInfoFragmentDirections.actionGroupInfoFrmToGroupMoreBottomSheetFrm(groupId)
             findNavController().navigate(actionToGroupMoreBottomSheet)
         }
 

@@ -5,4 +5,5 @@ data class MemberItem(
     val memberId: Long,
     val profileImgURL: String,
     val memberName: String,
+    var isEdit: Boolean?
 )
