@@ -78,12 +78,14 @@ class GroupInfoFragment : BaseFragment<FragmentGroupInfoBinding>(FragmentGroupIn
         // 그룹원 리스트 정보 관찰
         viewModel.memberList.observe(viewLifecycleOwner) { members ->
             memberAdapter.updateMembers(members)
+            binding.tvGroupInfoMemberNum.text = memberAdapter.itemCount.toString()
         }
 
         // 함께 한 모임 정보 관찰
         viewModel.gatheringList.observe(viewLifecycleOwner) { gather ->
             if (gather != null) {
                 gatheringAdapter.updateGatherings(gather)
+                binding.tvGroupInfoGatheringNum.text = gatheringAdapter.itemCount.toString()
             }
         }
     }
