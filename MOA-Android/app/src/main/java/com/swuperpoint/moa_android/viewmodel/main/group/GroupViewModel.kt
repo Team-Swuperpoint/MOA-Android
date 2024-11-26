@@ -20,6 +20,7 @@ class GroupViewModel: ViewModel() {
         _groupResponse.observeForever { response ->
             val items = response.map { group ->
                 GroupItem(
+                    groupId = group.groupId,
                     bgColor = group.bgColor,
                     emoji = group.emoji,
                     groupName = group.groupName,

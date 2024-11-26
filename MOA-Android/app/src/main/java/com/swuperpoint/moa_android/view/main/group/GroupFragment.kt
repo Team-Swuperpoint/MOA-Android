@@ -31,15 +31,21 @@ class GroupFragment : BaseFragment<FragmentGroupBinding>(FragmentGroupBinding::i
 
         // 더미 데이터 적용
         val sampleResponse = arrayListOf(
-            GroupResponse(R.color.main_500, "🍔", "먹짱친구들", 5, "1일 전"),
-            GroupResponse(R.color.sub_300, "🐶", "강쥐산책모임", 2, "12일 전"),
-            GroupResponse(R.color.sub_500, "✈️", "여행", 4, "10월 30일"),
+            GroupResponse(0, R.color.main_500, "🍔", "먹짱친구들", 5, "1일 전"),
+            GroupResponse(1, R.color.sub_300, "🐶", "강쥐산책모임", 2, "12일 전"),
+            GroupResponse(2, R.color.sub_500, "✈️", "여행", 4, "10월 30일"),
         )
         groupViewModel.setGroupResponse(sampleResponse)
 
         // 그룹 클릭 이벤트
         adapter.onItemClickListener = { position ->
-            showToast("$position 번째 그룹 클릭!")
+            // TODO: 사용자가 선택한 그룹 id를 그룹 정보 화면으로 넘어갈 때 argument로 전송 필요(이유: 그룹id로 그룹 정보 화면 데이터를 가져오기 위함)
+            // TODO: 그룹ID는 파이어베이스에서 가져와야함
+            // 그룹 정보 화면으로 이동
+            val actionToGroupInfo = GroupFragmentDirections.actionGroupFrmToGroupInfoFrm(
+                groupViewModel.groupList.value!![position].groupId
+            )
+            findNavController().navigate(actionToGroupInfo)
         }
 
         // FAB 버튼 클릭 이벤트
