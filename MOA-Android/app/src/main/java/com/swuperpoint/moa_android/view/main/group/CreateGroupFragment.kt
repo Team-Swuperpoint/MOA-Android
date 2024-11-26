@@ -73,7 +73,7 @@ class CreateGroupFragment : BaseFragment<FragmentCreateGroupBinding>(FragmentCre
         binding.btnCreateGroupCreate.setOnClickListener {
             // 추가 가능한 상태라면
             if (isEnable) {
-                showToast("그룹 추가! ${binding.edtCreateGroupEmoji.text} ${binding.edtCreateGroupTitle.text}")
+                showToast("새로운 그룹을 만들었습니다")
                 // TODO: 파이어베이스에 데이터 전송
 
                 // TODO: 데이터 전송에 성공했다면 그룹 화면으로 이동

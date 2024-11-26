@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--월간 캘린더에서 날짜 선택 on/off에 따른 텍스트 색상 처리 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 날짜 선택했을 때 -->
+    <item android:state_checked="true" android:color="@color/white"/>
+
+    <!-- 날짜 선택 안 했을 때 -->
+    <item android:color="#333333"/>
+</selector>

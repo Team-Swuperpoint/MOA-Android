@@ -75,6 +75,18 @@
             app:argType="long"/>
     </fragment>
 
+    <!-- 모임 만들기 -->
+    <fragment
+        android:id="@+id/frm_create_gathering"
+        android:name="com.swuperpoint.moa_android.view.main.group.CreateGatheringFragment"
+        android:label="frm_create_gathering"
+        tools:layout="@layout/fragment_create_gathering">
+        <!-- 그룹 id -->
+        <argument
+            android:name="groupId"
+            app:argType="long"/>
+    </fragment>
+
     <!-- 그룹 바텀 시트 -->
     <dialog
         android:id="@+id/sheet_group"
@@ -124,8 +136,11 @@
             app:popUpTo="@id/frm_create_group"
             app:popUpToInclusive="true"/>
         <action
-            android:id="@+id/action_groupInfoFrm_to_memberFrm"
+            android:id="@+id/action_groupMoreBottomSheetFrm_to_memberFrm"
             app:destination="@id/frm_member"/>
+        <action
+            android:id="@+id/action_groupMoreBottomSheetFrm_to_createGatheringFrm"
+            app:destination="@id/frm_create_gathering"/>
     </dialog>
 
     <!-- 타임라인 -->
