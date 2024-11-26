@@ -79,4 +79,7 @@ dependencies {
 
     // Glide
     implementation(libs.bumptech.glide)
+
+    // Custom Calendar
+    implementation(libs.material.calendarview)
 }
