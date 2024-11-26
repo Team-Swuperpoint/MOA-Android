@@ -20,6 +20,9 @@ fragmentKtx = "1.8.3"
 uiTooling = "1.7.4"
 glide = "4.16.0"
 material_calendarview = "2.0.1"
+splash = "1.0.1"
+naver = "5.10.0"
+org-jetbrains-kotlinx = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +48,9 @@ androidx-compose-lifecycle = { group = "androidx.lifecycle", name = "lifecycle-v
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 bumptech-glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 material-calendarview = { group = "com.github.prolificinteractive", name = "material-calendarview", version.ref = "material_calendarview" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splash" }
+navercorp-nid-oauth = { group = "com.navercorp.nid", name = "oauth", version.ref = "naver" }
+org-jetbrains-kotlinx = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "org-jetbrains-kotlinx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

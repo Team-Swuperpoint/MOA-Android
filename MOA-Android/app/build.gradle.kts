@@ -82,4 +82,11 @@ dependencies {
 
     // Custom Calendar
     implementation(libs.material.calendarview)
+
+    // 안드로이드12 대응 스플래시 스크린
+    implementation(libs.androidx.core.splashscreen)
+
+    // 네이버 로그인 SDK 설정
+    implementation(libs.navercorp.nid.oauth)
+    implementation(libs.org.jetbrains.kotlinx)
 }
