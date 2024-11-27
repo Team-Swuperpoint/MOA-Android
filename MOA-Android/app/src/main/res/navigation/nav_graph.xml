@@ -14,13 +14,134 @@
         tools:layout="@layout/fragment_home">
     </fragment>
 
-    <!-- 모임 -->
+    <!-- 그룹 -->
     <fragment
         android:id="@+id/frm_group"
         android:name="com.swuperpoint.moa_android.view.main.group.GroupFragment"
         android:label="frm_group"
         tools:layout="@layout/fragment_group">
+        <action
+            android:id="@+id/action_groupFrm_to_groupBottomSheetFrm"
+            app:destination="@+id/sheet_group"
+            app:enterAnim="@anim/anim_slide_in_up"
+            app:popExitAnim="@anim/anim_slide_out_down"/>
+        <action
+            android:id="@+id/action_groupFrm_to_groupInfoFrm"
+            app:destination="@id/frm_group_info"/>
     </fragment>
+
+    <!-- 그룹 추가하기 -->
+    <fragment
+        android:id="@+id/frm_create_group"
+        android:name="com.swuperpoint.moa_android.view.main.group.CreateGroupFragment"
+        android:label="frm_create_group"
+        tools:layout="@layout/fragment_create_group">
+        <action
+            android:id="@+id/action_createGroupFrm_to_groupFrm"
+            app:destination="@id/frm_group"
+            app:popUpTo="@id/frm_create_group"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <!-- 그룹 정보 -->
+    <fragment
+        android:id="@+id/frm_group_info"
+        android:name="com.swuperpoint.moa_android.view.main.group.GroupInfoFragment"
+        android:label="frm_group_info"
+        tools:layout="@layout/fragment_group_info">
+        <!-- 그룹 id -->
+        <argument
+            android:name="groupId"
+            app:argType="long"/>
+        <action
+            android:id="@+id/action_groupInfoFrm_to_groupFrm"
+            app:destination="@id/frm_group"/>
+        <action
+            android:id="@+id/action_groupInfoFrm_to_groupMoreBottomSheetFrm"
+            app:destination="@+id/sheet_group_more"
+            app:enterAnim="@anim/anim_slide_in_up"
+            app:popExitAnim="@anim/anim_slide_out_down"/>
+    </fragment>
+
+    <!-- 그룹원 목록 -->
+    <fragment
+        android:id="@+id/frm_member"
+        android:name="com.swuperpoint.moa_android.view.main.group.MemberFragment"
+        android:label="frm_member"
+        tools:layout="@layout/fragment_member">
+        <!-- 그룹 id -->
+        <argument
+            android:name="groupId"
+            app:argType="long"/>
+    </fragment>
+
+    <!-- 모임 만들기 -->
+    <fragment
+        android:id="@+id/frm_create_gathering"
+        android:name="com.swuperpoint.moa_android.view.main.group.CreateGatheringFragment"
+        android:label="frm_create_gathering"
+        tools:layout="@layout/fragment_create_gathering">
+        <!-- 그룹 id -->
+        <argument
+            android:name="groupId"
+            app:argType="long"/>
+    </fragment>
+
+    <!-- 그룹 바텀 시트 -->
+    <dialog
+        android:id="@+id/sheet_group"
+        android:name="com.swuperpoint.moa_android.view.main.group.GroupBottomSheetFragment"
+        android:label="sheet_group">
+        <action
+            android:id="@+id/action_groupBottomSheetFrm_to_groupFrm"
+            app:destination="@id/frm_group"
+            app:popUpTo="@id/frm_group"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_groupBottomSheetFrm_to_groupJoinBottomSheetFrm"
+            app:destination="@+id/sheet_group_join"
+            app:enterAnim="@anim/anim_slide_in_up"
+            app:popExitAnim="@anim/anim_slide_out_down"/>
+        <action
+            android:id="@+id/action_groupBottomSheetFrm_to_createGroupFrm"
+            app:destination="@id/frm_create_group"
+            app:popUpTo="@id/sheet_group"
+            app:popUpToInclusive="true"/>
+    </dialog>
+
+    <!-- 그룹 들어가기 바텀 시트 -->
+    <dialog
+        android:id="@+id/sheet_group_join"
+        android:name="com.swuperpoint.moa_android.view.main.group.GroupJoinBottomSheetFragment"
+        android:label="sheet_group_join">
+        <action
+            android:id="@+id/action_groupJoinBottomSheetFrm_to_groupFrm"
+            app:destination="@id/frm_group"
+            app:popUpTo="@id/frm_group"
+            app:popUpToInclusive="true"/>
+    </dialog>
+
+    <!-- 그룹 정보 화면 내 더보기 바텀 시트 -->
+    <dialog
+        android:id="@+id/sheet_group_more"
+        android:name="com.swuperpoint.moa_android.view.main.group.GroupMoreBottomSheetFragment"
+        android:label="sheet_group_more">
+        <!-- 그룹 id -->
+        <argument
+            android:name="groupId"
+            app:argType="long"/>
+        <action
+            android:id="@+id/action_groupMoreBottomSheetFrm_to_createGroupFrm"
+            app:destination="@id/frm_create_group"
+            app:popUpTo="@id/frm_create_group"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_groupMoreBottomSheetFrm_to_memberFrm"
+            app:destination="@id/frm_member"/>
+        <action
+            android:id="@+id/action_groupMoreBottomSheetFrm_to_createGatheringFrm"
+            app:destination="@id/frm_create_gathering"/>
+    </dialog>
 
     <!-- 타임라인 -->
     <fragment

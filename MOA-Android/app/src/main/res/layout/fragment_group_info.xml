@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="groupInfoVM"
+            type="com.swuperpoint.moa_android.viewmodel.main.group.GroupInfoViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/gray_200"
+        tools:context=".view.main.group.GroupInfoFragment">
+
+        <include
+            android:id="@+id/toolbar_create_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            layout="@layout/toolbar"/>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_group_info_emoji"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/pretendard_bold"
+                        android:padding="12dp"
+                        android:background="@drawable/radius_all_16"
+                        android:backgroundTint="@color/main_500"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp">
+
+                        <TextView
+                            android:id="@+id/tv_group_info_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            style="@style/Ongothic_H3"
+                            android:textColor="@color/gray_800"
+                            tools:text="먹짱친구들"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                style="@style/Pretendard_Body1"
+                                android:text="최근 모임: "
+                                android:textColor="@color/gray_800"
+                                android:layout_marginTop="4dp"/>
+                            <TextView
+                                android:id="@+id/tv_group_info_recent_date"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                style="@style/Pretendard_SubTitle2"
+                                android:textColor="@color/gray_800"
+                                android:layout_marginTop="4dp"
+                                tools:text="3 일전"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <ImageButton
+                        android:id="@+id/iBtn_group_info_more"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_more_24"
+                        android:background="@color/transparent"
+                        android:layout_marginBottom="16dp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/radius_top_32"
+                    android:paddingTop="32dp"
+                    android:paddingHorizontal="24dp"
+                    android:layout_marginTop="34dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Ongothic_H5"
+                        android:text="그룹 코드"
+                        android:textColor="@color/gray_800"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="16dp">
+
+                        <TextView
+                            android:id="@+id/tv_group_info_code"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            style="@style/Ongothic_SubTitle2"
+                            android:textColor="@color/main_500"
+                            tools:text="YJ100"/>
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btn_group_info_code_copy"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Pretendard_Caption1"
+                            android:text="코드 복사"
+                            android:textColor="@color/white"
+                            android:background="@drawable/radius_all_8"
+                            android:backgroundTint="@color/main_300"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:padding="8dp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="40dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Ongothic_H5"
+                            android:text="모임원"
+                            android:textColor="@color/gray_800"
+                            android:layout_marginEnd="4dp"/>
+
+                        <TextView
+                            android:id="@+id/tv_group_info_member_num"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Pretendard_H5"
+                            android:textColor="@color/main_500"
+                            tools:text="5"/>
+                    </LinearLayout>
+
+                    <!-- 그룹원 리스트 -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_group_info_member"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:overScrollMode="never"
+                        android:nestedScrollingEnabled="false"
+                        android:layout_marginTop="16dp"
+                        tools:listitem="@layout/item_group_member"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="40dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Ongothic_H5"
+                            android:text="함께 한 모임"
+                            android:textColor="@color/gray_800"
+                            android:layout_marginEnd="4dp"/>
+
+                        <TextView
+                            android:id="@+id/tv_group_info_gathering_num"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Pretendard_H5"
+                            android:textColor="@color/main_500"
+                            tools:text="5"/>
+                    </LinearLayout>
+
+                    <!-- 모임 리스트 -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_group_info_gathering"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:overScrollMode="never"
+                        android:nestedScrollingEnabled="false"
+                        android:layout_marginTop="16dp"
+                        tools:listitem="@layout/item_group_gathering"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+                    <!-- 공백 -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+</layout>

@@ -76,4 +76,10 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.lifecycle)
     debugImplementation(libs.androidx.ui.tooling)
+
+    // Glide
+    implementation(libs.bumptech.glide)
+
+    // Custom Calendar
+    implementation(libs.material.calendarview)
 }
