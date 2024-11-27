@@ -54,4 +54,23 @@
         <item name="android:textSize">14dp</item>
         <item name="android:fontFamily">@font/pretendard_bold</item>
     </style>
+
+    <!-- 스플래시 스크린 -->
+    <style name="SplashTheme" parent="Theme.SplashScreen">
+        <!-- 안드로이드12 이상 -->
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/main_300</item>
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/splash</item>
+        <item name="android:windowSplashScreenIconBackgroundColor" tools:targetApi="s">@color/transparent</item>
+        <item name="android:windowSplashScreenAnimationDuration" tools:targetApi="s">150</item>
+        <!-- 안드로이드12 미만 -->
+        <item name="windowSplashScreenBackground">@color/main_300</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/transparent</item>
+        <!-- splash 화면 이후의 화면 테마 -->
+        <item name="postSplashScreenTheme">@style/Theme.MOAAndroid</item>
+        <!-- Status bar and Nav bar 기본 설정 -->
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>
