@@ -97,4 +97,10 @@ abstract class BaseFragment<VB: ViewBinding>(private val inflate: Inflate<VB>) :
     fun setToolbarTitle(toolbar: TextView, title: String) {
         toolbar.text = title
     }
+
+    // status bar 색상 바꾸기
+    fun changeStatusbarColor(color: Int, isLightMode: Boolean) {
+        mainActivity?.window?.statusBarColor = ContextCompat.getColor(requireContext(), color)
+        WindowInsetsControllerCompat(mainActivity?.window!!, mainActivity?.window?.decorView!!).isAppearanceLightStatusBars = isLightMode
+    }
 }
