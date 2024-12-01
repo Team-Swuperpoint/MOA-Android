@@ -114,7 +114,9 @@ class GatheringInfoFragment : BaseFragment<FragmentGatheringInfoBinding>(Fragmen
 
         // 중간 지점 입력 버튼 클릭 이벤트
         binding.lLayoutGatheringInfoPlace.setOnClickListener {
-            // TODO: 중간지점 화면으로 이동
+            // 중간지점 화면으로 이동
+            val actionToGatheringPlace = GatheringInfoFragmentDirections.actionGatheringInfoFrmToGatheringPlaceFrm(gatheringId, null)
+            findNavController().navigate(actionToGatheringPlace)
         }
     }
 }

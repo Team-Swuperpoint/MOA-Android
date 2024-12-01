@@ -3,6 +3,7 @@ package com.swuperpoint.moa_android.widget
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import com.kakao.vectormap.KakaoMapSdk
 import com.navercorp.nid.NaverIdLoginSDK
 import com.swuperpoint.moa_android.R
 
@@ -29,6 +30,9 @@ class ApplicationClass: Application() {
         super.onCreate()
         // 네이버 로그인 SDK 초기화
         NaverIdLoginSDK.initialize(this, getString(R.string.naver_login_client_id) , getString(R.string.naver_login_client_secret), getString(R.string.app_name))
+
+        // 카카오 맵 초기화
+        KakaoMapSdk.init(this, getString(R.string.kakao_app_key))
 
         mSharedPreferences = applicationContext.getSharedPreferences(TAG, Context.MODE_PRIVATE)
     }
