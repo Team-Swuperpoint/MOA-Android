@@ -61,6 +61,9 @@
             app:destination="@+id/sheet_group_more"
             app:enterAnim="@anim/anim_slide_in_up"
             app:popExitAnim="@anim/anim_slide_out_down"/>
+        <action
+            android:id="@+id/action_groupInfoFrm_to_gatheringInfoFrm"
+            app:destination="@id/frm_gathering_info"/>
     </fragment>
 
     <!-- 그룹원 목록 -->
@@ -84,6 +87,23 @@
         <!-- 그룹 id -->
         <argument
             android:name="groupId"
+            app:argType="long"/>
+        <action
+            android:id="@+id/action_createGatheringFrm_to_gatheringInfoFrm"
+            app:destination="@id/frm_gathering_info"
+            app:popUpTo="@id/frm_create_gathering"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <!-- 모임 정보 -->
+    <fragment
+        android:id="@+id/frm_gathering_info"
+        android:name="com.swuperpoint.moa_android.view.main.group.GatheringInfoFragment"
+        android:label="frm_gathering_info"
+        tools:layout="@layout/fragment_gathering_info">
+        <!-- 모임 id -->
+        <argument
+            android:name="gatheringId"
             app:argType="long"/>
     </fragment>
 
