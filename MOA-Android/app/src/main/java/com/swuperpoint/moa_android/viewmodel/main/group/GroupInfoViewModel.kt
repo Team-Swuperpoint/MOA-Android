@@ -149,10 +149,21 @@ class GroupInfoViewModel: ViewModel() {
             .addOnSuccessListener { querySnapshot ->
                 val gatheringList = ArrayList<GroupGatheringResponse>()
                 for (document in querySnapshot.documents) {
+                    // Firebase에서 가져온 원본 날짜 ("2024-12-06")
+                    val rawDate = document.getString("date") ?: ""
+                    // 날짜 포맷 변환: yyyy-MM-dd -> yy.MM.dd
+                    val formattedDate = try {
+                        val date = LocalDate.parse(rawDate) // 원본 날짜 문자열을 LocalDate 객체로 파싱
+                        // LocalDate 객체에서 년도 뒷 2자리, 월, 일을 추출하여 yy.MM.dd 형식으로 조합
+                        "${date.year.toString().takeLast(2)}.${date.monthValue.toString().padStart(2, '0')}.${date.dayOfMonth.toString().padStart(2, '0')}"
+                    } catch (e: Exception) {
+                        rawDate // 변환 실패 시 원본 날짜 그대로 사용
+                    }
+
                     val gathering = GroupGatheringResponse(
                         gatheringId = document.id,
                         gatheringName = document.getString("gatheringName") ?: "",
-                        date = document.getString("date") ?: "",
+                        date = formattedDate,
                         gatheringImgURL = document.getString("gatheringImgURL") ?: ""
                     )
                     gatheringList.add(gathering)
