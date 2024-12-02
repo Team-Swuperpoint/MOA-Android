@@ -25,8 +25,6 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
         // 상태바 색상 변경
         changeStatusbarColor(R.color.white, isLightMode = true)
 
-        // TODO: 전달받은 groupId(args.groupId)로 파이어베이스에서 그룹원 리스트 검색 -> 전달받은 정보로 화면 구성
-
         // 데이터 로드
         viewModel.fetchMembers(args.groupId)
 
@@ -44,6 +42,7 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
 
     // LiveData 관찰
     private fun observeViewModel() {
+        // 멤버 목록 관찰
         viewModel.memberList.observe(viewLifecycleOwner) { members ->
             adapter.updateMembers(members)
             binding.tvMemberNum.text = adapter.itemCount.toString()
@@ -54,12 +53,12 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
             if (isSuccess) {
                 adapter.showDeleteBtn(false)
                 binding.tvMemberEdit.text = "편집"
+                isEdit = false
                 showToast("그룹원을 삭제했습니다")
             } else {
                 showToast("삭제에 실패했습니다")
             }
         }
-
     }
 
     // 클릭 이벤트
@@ -84,7 +83,19 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
 
         // 삭제 버튼 클릭 이벤트
         adapter.onDeleteBtnClickListener = { position ->
-            viewModel.deleteMember(args.groupId, position)
+            showDeleteConfirmDialog(position)
         }
+    }
+
+    // 삭제 확인 다이얼로그
+    private fun showDeleteConfirmDialog(position: Int) {
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("그룹원 삭제")
+            .setMessage("정말로 이 그룹원을 삭제하시겠습니까?")
+            .setPositiveButton("삭제") { _, _ ->
+                viewModel.deleteMember(args.groupId, position)
+            }
+            .setNegativeButton("취소", null)
+            .show()
     }
 }

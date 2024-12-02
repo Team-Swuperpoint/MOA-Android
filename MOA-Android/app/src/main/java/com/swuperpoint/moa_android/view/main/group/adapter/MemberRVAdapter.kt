@@ -10,7 +10,7 @@ import com.swuperpoint.moa_android.view.main.group.data.MemberItem
 /* 그룹원 목록 화면의 RV 어댑터 */
 class MemberRVAdapter: RecyclerView.Adapter<MemberRVViewHolder>() {
     // 그룹원 리스트
-    private lateinit var memberList: MutableList<MemberItem>
+    private var memberList: MutableList<MemberItem> = mutableListOf() // lateinit 대신 MutableList로 변경
 
     // 삭제 버튼 클릭
     var onDeleteBtnClickListener: ((Int) -> Unit)? = null
