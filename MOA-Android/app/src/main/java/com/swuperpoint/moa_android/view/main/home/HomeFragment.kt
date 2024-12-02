@@ -51,12 +51,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
         // 이전 모임으로 이동
         binding.iBtnHomePrev.setOnClickListener {
-
+            homeViewModel.moveToPrevGathering()
         }
 
         // 다음 모임으로 이동
         binding.iBtnHomeNext.setOnClickListener {
-            
+            homeViewModel.moveToNextGathering()
         }
     }
 

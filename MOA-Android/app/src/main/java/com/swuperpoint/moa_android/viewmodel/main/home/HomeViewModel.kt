@@ -1,20 +1,16 @@
 package com.swuperpoint.moa_android.viewmodel.main.home
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.navercorp.nid.oauth.NidOAuthLogin
 import com.navercorp.nid.profile.NidProfileCallback
 import com.navercorp.nid.profile.data.NidProfileResponse
-import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.data.remote.model.home.HomeGroupListResponse
 import com.swuperpoint.moa_android.data.remote.model.home.HomeResponse
 import com.swuperpoint.moa_android.view.main.home.data.HomeGatheringItem
@@ -24,13 +20,15 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.Calendar
 
 /* 홈 화면 뷰 모델 */
 class HomeViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val _homeResponse = MutableLiveData<HomeResponse>() // 내부 수정용 변수
     val homeResponse: LiveData<HomeResponse> get() = _homeResponse // 외부 읽기 전용 변수
+
+    // 현재 선택된 위치를 추적하는 변수
+    private var currentPosition = 0
 
     // 닉네임
     var nickname: LiveData<String> = _homeResponse.map { it.nickname }
@@ -269,31 +267,6 @@ class HomeViewModel : ViewModel() {
         _homeResponse.postValue(currentResponse.copy(groupList = groupsList))
     }
 
-
-//    // 더미데이터 적용
-//    // TODO: 파이어베이스 연결 시 삭제하기
-//    fun fetchGroupList(): ArrayList<HomeGroupListResponse> {
-//        return arrayListOf(
-//            HomeGroupListResponse(R.color.main_500, "🍔", "9일"),
-//            HomeGroupListResponse(R.color.main_100, "🐶", "13일"),
-//            HomeGroupListResponse(R.color.sub_500, "✈️", "24일")
-//        )
-//    }
-
-//    fun fetchGatheringInfo(): HomeGatheringItem {
-//        return HomeGatheringItem(
-//                1,
-//                "먹짱친구들",
-//                "빵순이투어🥐",
-//                "10월 8일 (화) 15:02",
-//                "경복궁역 5번 출구",
-//                2,
-//                arrayListOf("https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyNDA0MjhfMjY4%2FMDAxNzE0MzEyMjk5NDQ4.Q80gZpRJgqUFcOCVQJHZp8dHtO3R7tNyiDTuyl3jC7Ug.EleTj7FhgQRu4tYOT9lYvx2Frx2dHZO3CPsJV9qspUwg.JPEG%2FScreenshot%25A3%25DF20240428%25A3%25DF224935%25A3%25DFInstagram.jpg&type=sc960_832",
-//                    "https://search.pstatic.net/sunny/?src=https%3A%2F%2Fi1.sndcdn.com%2Fartworks-N58pyyEi9rcBd4wf-STMfCQ-t500x500.jpg&type=sc960_832",
-//                    "https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMjAxMzFfMjg5%2FMDAxNjQzNjM4NzU1NTA5.dhUbIVx5-n9NmT38o1HncivKJAVMzHk3FCoRziAA9d4g.1pLdpIJV8KMxKqYsxtue18CpHeReRPoSV-1R2Ll_0E8g.JPEG.gyulibae0905%2FScreenshot%25A3%25DF20220131%25A3%25AD225304%25A3%25DFInstagram.jpg&type=sc960_832")
-//        )
-//    }
-
     // response 데이터 설정
     fun setHomeResponse(response: HomeResponse) {
         _homeResponse.value = response
@@ -305,13 +278,50 @@ class HomeViewModel : ViewModel() {
         _homeResponse.removeObserver { }
     }
 
-    // 다음 모임 확인하기
-    fun showNextGathering() {
+    // 이전 모임으로 이동
+    fun moveToPrevGathering() {
+        groupList.value?.let { list ->
+            if (list.isNotEmpty() && currentPosition > 0) {
+                // 이전 아이템의 선택 상태를 true로, 나머지는 false로 설정
+                list.forEachIndexed { index, item ->
+                    item.isSelected = index == currentPosition - 1
+                }
+                currentPosition--
+                groupList.postValue(list)
+
+                // 선택된 그룹의 모임 정보 가져오기
+                fetchSelectedGroupGathering(currentPosition)
+            }
+        }
+    }
+
+    // 다음 모임으로 이동
+    fun moveToNextGathering() {
+        groupList.value?.let { list ->
+            if (list.isNotEmpty() && currentPosition < list.size - 1) {
+                // 다음 아이템의 선택 상태를 true로, 나머지는 false로 설정
+                list.forEachIndexed { index, item ->
+                    item.isSelected = index == currentPosition + 1
+                }
+                currentPosition++
+                groupList.postValue(list)
+
+                // 선택된 그룹의 모임 정보 가져오기
+                fetchSelectedGroupGathering(currentPosition)
+            }
+        }
     }
 
     fun fetchSelectedGroupGathering(position: Int) {
+        currentPosition = position  // 현재 위치 업데이트
         val selectedGroup = groupList.value?.get(position) ?: return
-        // groupId로 직접 모임 정보 가져오기
+
+        // 선택된 상태 업데이트
+        groupList.value?.forEachIndexed { index, item ->
+            item.isSelected = index == position
+        }
+        groupList.value = groupList.value
+        
         fetchUpcomingGathering(selectedGroup.groupId, selectedGroup.groupName)
     }
 }
