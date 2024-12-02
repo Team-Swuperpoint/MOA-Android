@@ -234,6 +234,20 @@
         android:name="com.swuperpoint.moa_android.view.main.timeline.TimelineFragment"
         android:label="frm_timeline"
         tools:layout="@layout/fragment_timeline">
+        <action
+            android:id="@+id/action_timelineFrm_to_createTimelineFrm"
+            app:destination="@id/frm_create_timeline"/>
+    </fragment>
+
+    <!-- 타임라인 만들기 -->
+    <fragment
+        android:id="@+id/frm_create_timeline"
+        android:name="com.swuperpoint.moa_android.view.main.timeline.CreateTimelineFragment"
+        android:label="frm_create_timeline"
+        tools:layout="@layout/fragment_create_timeline">
+        <action
+            android:id="@+id/action_createTimelineFrm_to_timelineFrm"
+            app:destination="@id/frm_timeline"/>
     </fragment>
 
     <!-- 마이페이지 -->

@@ -1,6 +1,7 @@
 package com.swuperpoint.moa_android.view.main.timeline
 
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.databinding.FragmentTimelineBinding
 import com.swuperpoint.moa_android.view.base.BaseFragment
@@ -32,7 +33,9 @@ class TimelineFragment : BaseFragment<FragmentTimelineBinding>(FragmentTimelineB
 
         // FAB 버튼 클릭 이벤트
         binding.fabTimelineAdd.setOnClickListener {
-            // TODO: 타임라인 만들기 화면으로 이동
+            // 타임라인 만들기 화면으로 이동
+            val actionToCreateTimeline = TimelineFragmentDirections.actionTimelineFrmToCreateTimelineFrm()
+            findNavController().navigate(actionToCreateTimeline)
         }
 
         // 타임라인 1개 클릭 이벤트
