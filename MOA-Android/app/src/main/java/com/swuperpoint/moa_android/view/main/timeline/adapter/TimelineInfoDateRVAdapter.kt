@@ -16,6 +16,9 @@ class TimelineInfoDateRVAdapter: RecyclerView.Adapter<TimelineInfoDateRVViewHold
     private var timelineList = ArrayList<TimelinePhotoResponse>()
     private lateinit var photoAdapter: TimelineInfoPhotoRVAdapter
 
+    // 사진 클릭 이벤트
+    var onClickListener: ((String) -> Unit)? = null
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -46,6 +49,11 @@ class TimelineInfoDateRVAdapter: RecyclerView.Adapter<TimelineInfoDateRVViewHold
         }
 
         holder.binding.rvItemTimelineInfoPhoto.adapter = photoAdapter
+
+        // 사진 클릭 이벤트(pos? 사진의 position)
+        photoAdapter.onClickListener = { pos ->
+            onClickListener?.invoke(timelineList[position].photoList[pos])
+        }
     }
 
     // 데이터 업데이트

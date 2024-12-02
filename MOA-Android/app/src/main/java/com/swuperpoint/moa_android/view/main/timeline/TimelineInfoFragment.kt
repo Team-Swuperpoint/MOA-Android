@@ -65,6 +65,13 @@ class TimelineInfoFragment : BaseFragment<FragmentTimelineInfoBinding>(FragmentT
 
         // 어댑터 연결
         binding.rvTimelineInfoPhotos.adapter = adapter
+
+        // 사진 클릭 이벤트
+        adapter.onClickListener = { img ->
+            // 사진 확대 화면으로 이동
+            val actionToTimelinePhoto = TimelineInfoFragmentDirections.actionTimelineInfoFrmToTimelinePhotoFrm(img)
+            findNavController().navigate(actionToTimelinePhoto)
+        }
     }
 
     // LiveData 관찰
