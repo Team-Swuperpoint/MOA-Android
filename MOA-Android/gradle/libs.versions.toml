@@ -23,6 +23,7 @@ material_calendarview = "2.0.1"
 splash = "1.0.1"
 naver = "5.10.0"
 org-jetbrains-kotlinx = "1.8.0"
+firebaseAuthKtx = "23.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +52,7 @@ material-calendarview = { group = "com.github.prolificinteractive", name = "mate
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splash" }
 navercorp-nid-oauth = { group = "com.navercorp.nid", name = "oauth", version.ref = "naver" }
 org-jetbrains-kotlinx = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "org-jetbrains-kotlinx" }
+firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

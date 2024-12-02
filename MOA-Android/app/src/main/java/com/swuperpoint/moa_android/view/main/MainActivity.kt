@@ -1,5 +1,6 @@
 package com.swuperpoint.moa_android.view.main
 
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
@@ -7,11 +8,59 @@ import androidx.navigation.ui.NavigationUI
 import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.databinding.ActivityMainBinding
 import com.swuperpoint.moa_android.view.base.BaseActivity
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.swuperpoint.moa_android.view.main.onboarding.LoginActivity
+import com.swuperpoint.moa_android.widget.utils.saveNickname
+import com.navercorp.nid.NaverIdLoginSDK
+import com.navercorp.nid.oauth.NidOAuthLogin
+import com.navercorp.nid.profile.NidProfileCallback
+import com.navercorp.nid.profile.data.NidProfileResponse
 
 class MainActivity: BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
     private var backPressedTime: Long = 0
+    private val db = Firebase.firestore
 
     override fun beforeSetContentView() {
+        FirebaseApp.initializeApp(this)
+
+        // 네이버 로그인 토큰 유효성 체크
+        val accessToken = NaverIdLoginSDK.getAccessToken()
+
+        if (accessToken == null) {
+            // 토큰이 없으면 로그인 화면으로
+            startActivityWithClear(LoginActivity::class.java)
+            return
+        }
+
+        // 토큰 유효성 체크
+        NidOAuthLogin().callProfileApi(object : NidProfileCallback<NidProfileResponse> {
+            override fun onSuccess(result: NidProfileResponse) {
+                // 토큰이 유효하면 사용자 정보 가져오기
+                val email = result.profile?.email
+                if (email != null) {
+                    db.collection("users")
+                        .document(email)
+                        .get()
+                        .addOnSuccessListener { document ->
+                            document.getString("nickname")?.let { nickname ->
+                                saveNickname(nickname)
+                            }
+                        }
+                }
+            }
+
+            override fun onFailure(httpStatus: Int, message: String) {
+                // 토큰이 만료되었으면 로그인 화면으로
+                startActivityWithClear(LoginActivity::class.java)
+            }
+
+            override fun onError(errorCode: Int, message: String) {
+                startActivityWithClear(LoginActivity::class.java)
+            }
+        })
     }
 
     override fun initAfterBinding() {

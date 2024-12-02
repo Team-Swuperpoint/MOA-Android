@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.kapt)
     alias(libs.plugins.androidx.navigation.safeargs)
     alias(libs.plugins.compose.compiler)
+
+    // 구글 서비스 Gradle 플러그인
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -54,6 +57,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.firebase.auth.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -89,4 +93,9 @@ dependencies {
     // 네이버 로그인 SDK 설정
     implementation(libs.navercorp.nid.oauth)
     implementation(libs.org.jetbrains.kotlinx)
+
+    // 파이어베이스 SDK 설정
+    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-firestore")
 }

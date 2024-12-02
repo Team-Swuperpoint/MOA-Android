@@ -1,18 +1,23 @@
 package com.swuperpoint.moa_android.view.main.group
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.firestore.firestore
 import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.databinding.FragmentCreateGroupBinding
 import com.swuperpoint.moa_android.view.base.BaseFragment
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 /* 그룹 추가 화면 */
 class CreateGroupFragment : BaseFragment<FragmentCreateGroupBinding>(FragmentCreateGroupBinding::inflate) {
     // 추가하기 버튼 활성화 여부
     private var isEnable = false
+    private var db = Firebase.firestore
 
     @SuppressLint("SetTextI18n")
     override fun initViewCreated() {
@@ -73,8 +78,41 @@ class CreateGroupFragment : BaseFragment<FragmentCreateGroupBinding>(FragmentCre
         binding.btnCreateGroupCreate.setOnClickListener {
             // 추가 가능한 상태라면
             if (isEnable) {
-                showToast("새로운 그룹을 만들었습니다")
-                // TODO: 파이어베이스에 데이터 전송
+                val emoji = binding.edtCreateGroupEmoji.text.toString()
+                val groupName = binding.edtCreateGroupTitle.text.toString()
+
+                // Firestore에 저장할 그룹 데이터(그룹 아이템 데이터 클래스 참조)
+                val group = hashMapOf(
+                    "emoji" to emoji,
+                    "groupName" to groupName,
+                    "groupMemberNum" to 1,
+                    "bgColor" to (0..5).random(),
+                    "recentGathering" to "아직 모임이 없어요",
+                    "createdAt" to com.google.firebase.Timestamp.now()  // 생성 시간 추가
+                )
+
+                // Firestore에 그룹 정보 저장
+                db.collection("groups")
+                    .add(group)
+                    .addOnSuccessListener { documentReference ->
+                        val groupId = documentReference.id
+                        documentReference.update("groupId", groupId)
+                            .addOnSuccessListener {
+                                // Fragment가 아직 유효한지 확인
+                                if (isAdded && activity != null) {
+                                    showToast("새로운 그룹을 만들었습니다")
+                                    val actionToGroup: NavDirections = CreateGroupFragmentDirections.actionCreateGroupFrmToGroupFrm()
+                                    findNavController().navigate(actionToGroup)
+                                }
+                            }
+                    }
+                    .addOnFailureListener { e ->
+                        // Fragment가 아직 유효한지 확인
+                        if (isAdded && activity != null) {
+                            Log.e("CreateGroup", "Error creating group", e)
+                            showToast("그룹 생성 중 오류가 발생했습니다. 다시 시도해주세요.")
+                        }
+                    }
 
                 // TODO: 데이터 전송에 성공했다면 그룹 화면으로 이동
                 val actionToGroup: NavDirections = CreateGroupFragmentDirections.actionCreateGroupFrmToGroupFrm()

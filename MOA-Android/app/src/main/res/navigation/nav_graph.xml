@@ -50,9 +50,10 @@
         android:label="frm_group_info"
         tools:layout="@layout/fragment_group_info">
         <!-- 그룹 id -->
+        <!-- groupId 타입을 String으로 변경 -->
         <argument
             android:name="groupId"
-            app:argType="long"/>
+            app:argType="string"/>
         <action
             android:id="@+id/action_groupInfoFrm_to_groupFrm"
             app:destination="@id/frm_group"/>
@@ -72,7 +73,7 @@
         <!-- 그룹 id -->
         <argument
             android:name="groupId"
-            app:argType="long"/>
+            app:argType="string"/>
     </fragment>
 
     <!-- 모임 만들기 -->
@@ -84,7 +85,7 @@
         <!-- 그룹 id -->
         <argument
             android:name="groupId"
-            app:argType="long"/>
+            app:argType="string"/>
     </fragment>
 
     <!-- 그룹 바텀 시트 -->
@@ -129,7 +130,7 @@
         <!-- 그룹 id -->
         <argument
             android:name="groupId"
-            app:argType="long"/>
+            app:argType="string"/>
         <action
             android:id="@+id/action_groupMoreBottomSheetFrm_to_createGroupFrm"
             app:destination="@id/frm_create_group"

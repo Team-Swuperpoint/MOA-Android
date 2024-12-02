@@ -20,7 +20,7 @@ class GroupInfoFragment : BaseFragment<FragmentGroupInfoBinding>(FragmentGroupIn
     private val viewModel: GroupInfoViewModel by viewModels() // 뷰모델
     private var memberAdapter = GroupMemberRVAdapter() // 그룹원 리스트 어댑터
     private var gatheringAdapter = GroupGatheringRVAdapter() // 모임 리스트 어댑터
-    private var groupId: Long = 0 // 그룹 id
+    private var groupId: String = "" // 그룹 id
 
     override fun initViewCreated() {
         // 바텀 네비게이션 숨기기
@@ -32,25 +32,26 @@ class GroupInfoFragment : BaseFragment<FragmentGroupInfoBinding>(FragmentGroupIn
         // 상태바 색상 변경
         changeStatusbarColor(R.color.gray_200, isLightMode = true)
 
+        // initAfterBinding()에 있던 거 여기로 이동시킴
+        // 그룹원 리스트 어댑터 연결
+        binding.rvGroupInfoMember.adapter = memberAdapter
+        // 모임 리스트 어댑터 연결
+        binding.rvGroupInfoGathering.adapter = gatheringAdapter
+
         val args: GroupInfoFragmentArgs by navArgs()
         groupId = args.groupId
         // TODO: 전달받은 groupId(args.groupId)로 파이어베이스에서 그룹 정보 검색 -> 전달받은 정보로 화면 구성
+
+        // LiveData 관찰 위치 이동 -> 데이터 로드보다 먼저
+        observeViewModel()
+
         // 데이터 로드
         viewModel.fetchGroupInfo(groupId)
-
-        // LiveData 관찰
-        observeViewModel()
     }
 
     override fun initAfterBinding() {
         // 클릭 이벤트
         onClickListener()
-
-        // 그룹원 리스트 어댑터 연결
-        binding.rvGroupInfoMember.adapter = memberAdapter
-
-        // 모임 리스트 어댑터 연결
-        binding.rvGroupInfoGathering.adapter = gatheringAdapter
     }
 
     // LiveData 관찰
