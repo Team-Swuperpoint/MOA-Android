@@ -103,7 +103,7 @@ class CreateGatheringFragment : BaseFragment<FragmentCreateGatheringBinding>(Fra
                     "gatheringImgURL" to "",
                     "createdAt" to com.google.firebase.Timestamp.now()
                 )
-
+                
                 db.collection("groups")
                     .document(groupId)
                     .collection("gatherings")

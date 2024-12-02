@@ -12,6 +12,9 @@ class GroupGatheringRVAdapter: RecyclerView.Adapter<GroupGatheringRVViewHolder>(
     // 모임 리스트 초기화
     private var gatheringList: List<GatheringItem> = emptyList()
 
+    // 모임 버튼 클릭 이벤트
+    var onClickListener: ((Int, Long) -> Unit)? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupGatheringRVViewHolder {
         val binding: ItemGroupGatheringBinding = ItemGroupGatheringBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -24,6 +27,11 @@ class GroupGatheringRVAdapter: RecyclerView.Adapter<GroupGatheringRVViewHolder>(
     override fun onBindViewHolder(holder: GroupGatheringRVViewHolder, position: Int) {
         val item = gatheringList[position]
         holder.bind(item)
+
+        // 모임 레이아웃 클릭 이벤트
+        holder.binding.lLayoutItemGroupGathering.setOnClickListener {
+            onClickListener?.invoke(position, item.gatheringId)
+        }
     }
 
     // 모임 데이터 업데이트

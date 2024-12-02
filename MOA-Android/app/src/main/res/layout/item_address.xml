@@ -1,0 +1,41 @@
+<!-- 주소 목록 아이템 -->
+<LinearLayout
+    android:id="@+id/lLayout_item_address"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- 장소 이름 -->
+    <TextView
+        android:id="@+id/tv_item_address_place_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Pretendard_SubTitle2"
+        android:textColor="@color/gray_800"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp"
+        android:layout_marginBottom="2dp"/>
+
+    <!-- 도로명 주소 -->
+    <TextView
+        android:id="@+id/tv_item_address_road_address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Pretendard_Popup2"
+        android:textColor="@color/gray_600"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:layout_marginTop="2dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp"
+        android:layout_marginBottom="16dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray_300"/>
+</LinearLayout>

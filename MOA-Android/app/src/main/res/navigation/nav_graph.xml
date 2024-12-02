@@ -62,6 +62,9 @@
             app:destination="@+id/sheet_group_more"
             app:enterAnim="@anim/anim_slide_in_up"
             app:popExitAnim="@anim/anim_slide_out_down"/>
+        <action
+            android:id="@+id/action_groupInfoFrm_to_gatheringInfoFrm"
+            app:destination="@id/frm_gathering_info"/>
     </fragment>
 
     <!-- 그룹원 목록 -->
@@ -86,6 +89,71 @@
         <argument
             android:name="groupId"
             app:argType="string"/>
+        <action
+            android:id="@+id/action_createGatheringFrm_to_gatheringInfoFrm"
+            app:destination="@id/frm_gathering_info"
+            app:popUpTo="@id/frm_create_gathering"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <!-- 모임 정보 -->
+    <fragment
+        android:id="@+id/frm_gathering_info"
+        android:name="com.swuperpoint.moa_android.view.main.group.GatheringInfoFragment"
+        android:label="frm_gathering_info"
+        tools:layout="@layout/fragment_gathering_info">
+        <!-- 모임 id -->
+        <argument
+            android:name="gatheringId"
+            app:argType="long"/>
+        <action
+            android:id="@+id/action_gatheringInfoFrm_to_gatheringPlaceFrm"
+            app:destination="@id/frm_gathering_place"/>
+    </fragment>
+
+    <!-- 중간 지점 찾기 -->
+    <fragment
+        android:id="@+id/frm_gathering_place"
+        android:name="com.swuperpoint.moa_android.view.main.group.GatheringPlaceFragment"
+        android:label="frm_gathering_place"
+        tools:layout="@layout/fragment_gathering_place">
+        <!-- 모임 id -->
+        <argument
+            android:name="gatheringId"
+            app:argType="long"/>
+        <argument
+            android:name="addressInfo"
+            app:argType="com.swuperpoint.moa_android.view.main.group.data.AddressItem"
+            app:nullable="true"/>
+        <action
+            android:id="@+id/action_gatheringPlaceFrm_to_addressFrm"
+            app:destination="@id/frm_address"/>
+        <action
+            android:id="@+id/action_gatheringPlaceFrm_to_gatheringInfoFrm"
+            app:destination="@id/frm_gathering_info"
+            app:popUpToInclusive="true"
+            app:popUpTo="@id/frm_gathering_info"/>
+    </fragment>
+
+    <!-- 주소 검색 -->
+    <fragment
+        android:id="@+id/frm_address"
+        android:name="com.swuperpoint.moa_android.view.main.group.AddressFragment"
+        android:label="frm_address"
+        tools:layout="@layout/fragment_address">
+        <!-- 모임 id -->
+        <argument
+            android:name="gatheringId"
+            app:argType="long"/>
+        <argument
+            android:name="addressInfo"
+            app:argType="com.swuperpoint.moa_android.view.main.group.data.AddressItem"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_addressFrm_to_gatheringPlaceFrm"
+            app:destination="@id/frm_gathering_place"
+            app:popUpToInclusive="true"
+            app:popUpTo="@id/frm_gathering_place"/>
     </fragment>
 
     <!-- 그룹 바텀 시트 -->

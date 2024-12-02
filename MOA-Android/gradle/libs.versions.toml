@@ -24,6 +24,9 @@ splash = "1.0.1"
 naver = "5.10.0"
 org-jetbrains-kotlinx = "1.8.0"
 firebaseAuthKtx = "23.1.0"
+gson = "2.11.0"
+kakao = "2.12.8"
+retrofit2 = "2.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +56,10 @@ androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscree
 navercorp-nid-oauth = { group = "com.navercorp.nid", name = "oauth", version.ref = "naver" }
 org-jetbrains-kotlinx = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "org-jetbrains-kotlinx" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+kakao-maps = { group = "com.kakao.maps.open", name = "android", version.ref = "kakao" }
+retrofit2-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit2" }
+retrofit2-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit2" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -60,3 +67,4 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 androidx-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "androidx-navigation" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }

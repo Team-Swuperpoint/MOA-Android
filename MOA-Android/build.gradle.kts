@@ -12,7 +12,9 @@ plugins {
     alias(libs.plugins.kapt) apply false
     alias(libs.plugins.androidx.navigation.safeargs) apply false
     alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.kotlin.parcelize) apply false
 
     // 파이어베이스 연동을 위한 구글 서비스 Gradle 플러그인
     id("com.google.gms.google-services") version "4.4.2" apply false
+
 }

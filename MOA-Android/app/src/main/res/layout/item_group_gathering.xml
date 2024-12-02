@@ -12,13 +12,14 @@
     </data>
 
     <LinearLayout
+        android:id="@+id/lLayout_item_group_gathering"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="12dp"
         android:gravity="center"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/ic_bg_card_342">
+        android:background="@drawable/ic_card_bg">
 
         <androidx.cardview.widget.CardView
             android:layout_width="wrap_content"
