@@ -264,6 +264,7 @@
 
         <!-- 모임 정보 더보기 -->
         <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_home_more_info"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:background="@drawable/radius_all_24"

@@ -15,8 +15,8 @@ class GroupGatheringRVViewHolder(val binding: ItemGroupGatheringBinding): Recycl
         // 모임 이미지 로드
         Glide.with(applicationContext())
             .load(item.gatheringImgURL)
-            .fallback(R.color.gray_200)
-            .error(R.color.gray_200)
+            .fallback(R.drawable.ic_default_logo)
+            .error(R.drawable.ic_default_logo)
             .into(binding.ivItemGroupGatheringImage)
 
         binding.executePendingBindings()

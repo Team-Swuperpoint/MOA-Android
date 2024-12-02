@@ -11,6 +11,8 @@ data class HomeResponse(
 
 /* 다가오는 모임 리스트 */
 data class HomeGroupListResponse(
+    val groupId: String,
+    val groupName: String,
     val bgColor: Int, // 그룹 배경 색상
     val emoji: String, // 이모지
     val date: String // 모임 날짜
@@ -18,7 +20,7 @@ data class HomeGroupListResponse(
 
 /* 가장 가까운 1개 모임 정보 */
 data class HomeGroupInfoResponse(
-    val gatheringId: Long, // 모임 ID
+    val gatheringId: String, // 모임 ID
     val groupName: String, // 그룹 이름
     val gatheringName: String, // 모임 이름
     val date: String, // 모임 날짜

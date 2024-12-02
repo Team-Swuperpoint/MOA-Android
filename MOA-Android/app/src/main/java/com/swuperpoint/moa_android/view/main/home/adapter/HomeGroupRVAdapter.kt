@@ -8,7 +8,9 @@ import com.swuperpoint.moa_android.databinding.ItemHomeGroupBinding
 import com.swuperpoint.moa_android.view.main.home.data.HomeGroupItem
 
 /* 홈 화면의 그룹 RV 어댑터 */
-class HomeGroupRVAdapter(private var groupList: ArrayList<HomeGroupItem>?): RecyclerView.Adapter<HomeGroupRVViewHolder>() {
+class HomeGroupRVAdapter(
+    private var groupList: ArrayList<HomeGroupItem> = ArrayList() // 기본값으로 null 대신 빈 ArrayList 사용
+): RecyclerView.Adapter<HomeGroupRVViewHolder>() {
     // 그룹 클릭
     var onItemClickListener: ((Int) -> Unit)? = null
 
@@ -46,7 +48,6 @@ class HomeGroupRVAdapter(private var groupList: ArrayList<HomeGroupItem>?): Recy
     // 아이템 업데이트
     @SuppressLint("NotifyDataSetChanged")
     fun updateItems(newItems: ArrayList<HomeGroupItem>) {
-        groupList?.clear()
         groupList = newItems
         notifyDataSetChanged()
     }

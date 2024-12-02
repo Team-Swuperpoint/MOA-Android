@@ -8,15 +8,22 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.databinding.ActivityNicknameBinding
 import com.swuperpoint.moa_android.view.base.BaseActivity
 import com.swuperpoint.moa_android.view.main.MainActivity
 import com.swuperpoint.moa_android.widget.utils.saveNickname
 import java.lang.Exception
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import java.util.UUID
 
 /* 닉네임 입력 화면 */
 class NicknameActivity : BaseActivity<ActivityNicknameBinding>(ActivityNicknameBinding::inflate) {
+    private val db = Firebase.firestore
+    private val auth = FirebaseAuth.getInstance()
     private lateinit var naverEmail: String // 네이버 이메일
     private lateinit var naverProfile: String // 네이버 프로필
 
@@ -48,18 +55,93 @@ class NicknameActivity : BaseActivity<ActivityNicknameBinding>(ActivityNicknameB
         // 회원가입 버튼 클릭 이벤트
         binding.btnNicknameSignup.setOnClickListener {
             if (binding.edtNickname.text.toString().isNotEmpty()) {
-                // TODO: 파이어베이스에 회원가입 데이터 전송
-                // 전송 데이터: naverEmail, naverProfile, binding.edtNickname.text.toString()
-                Log.d("회원가입 성공!", "${naverEmail} ${naverProfile} ${binding.edtNickname.text}")
 
-                // TODO: 회원가입 데이터 전송에 성공했다면 닉네임 저장
-                saveNickname(binding.edtNickname.text.toString())
+                // 파이어베이스에 회원가입 데이터 전송
+                val user = hashMapOf(
+                    "email" to naverEmail,
+                    "profile" to naverProfile,
+                    "nickname" to binding.edtNickname.text.toString()
+                )
 
-                // TODO: 회원가입 데이터 전송에 성공했다면 홈 화면으로 이동
-                showToast("회원가입이 완료되었습니다!")
-                startActivityWithClear(MainActivity::class.java)
+                db.collection("users")
+                    .document(naverEmail)
+                    .set(user)
+                    .addOnSuccessListener {
+                        Log.d("회원가입 성공!", "${naverEmail} ${naverProfile} ${binding.edtNickname.text}")
+                        // 회원가입 데이터 전송 성공 시 닉네임 저장
+                        saveNickname(binding.edtNickname.text.toString())
+                        // 회원가입 데이터 전송 성공 시 홈 화면으로 이동
+                        showToast("회원가입이 완료되었습니다!")
+                        startActivityWithClear(MainActivity::class.java)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("회원가입 실패", "Error: ${e.message}")
+                        showToast("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.")
+                    }
             }
         }
+
+        binding.btnNicknameSignup.setOnClickListener {
+            if (binding.edtNickname.text.toString().isNotEmpty()) {
+                // 먼저 로그인 시도
+                auth.signInWithEmailAndPassword(naverEmail, generateSecurePassword())
+                    .addOnSuccessListener { authResult ->
+                        // Firestore에 사용자 정보 저장/업데이트
+                        val user = hashMapOf(
+                            "email" to naverEmail,
+                            "profile" to naverProfile,
+                            "nickname" to binding.edtNickname.text.toString()
+                        )
+
+                        db.collection("users")
+                            .document(naverEmail)
+                            .set(user)
+                            .addOnSuccessListener {
+                                saveNickname(binding.edtNickname.text.toString())
+                                showToast("가입이 완료되었습니다!")
+                                startActivityWithClear(MainActivity::class.java)
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("가입 실패", "Error: ${e.message}")
+                                showToast("오류가 발생했습니다. 다시 시도해주세요.")
+                            }
+                    }
+                    .addOnFailureListener { loginError ->
+                        // 로그인 실패시 회원가입 시도
+                        auth.createUserWithEmailAndPassword(naverEmail, generateSecurePassword())
+                            .addOnSuccessListener { authResult ->
+                                // Firestore에 사용자 정보 저장
+                                val user = hashMapOf(
+                                    "email" to naverEmail,
+                                    "profile" to naverProfile,
+                                    "nickname" to binding.edtNickname.text.toString()
+                                )
+
+                                db.collection("users")
+                                    .document(naverEmail)
+                                    .set(user)
+                                    .addOnSuccessListener {
+                                        saveNickname(binding.edtNickname.text.toString())
+                                        showToast("가입이 완료되었습니다!")
+                                        startActivityWithClear(MainActivity::class.java)
+                                    }
+                                    .addOnFailureListener { firestoreError ->
+                                        Log.e("가입 실패", "Error: ${firestoreError.message}")
+                                        showToast("오류가 발생했습니다. 다시 시도해주세요.")
+                                    }
+                            }
+                            .addOnFailureListener { signUpError ->
+                                showToast("회원가입 중 오류가 발생했습니다.")
+                            }
+                    }
+            }
+        }
+
+    }
+    private fun generateSecurePassword(): String {
+        // 네이버 로그인을 사용하기 때문에 실제 비밀번호는 사용되지 않음
+        // 임의의 문자열 생성
+        return UUID.randomUUID().toString()
     }
 
     // 버튼 UI 변경
