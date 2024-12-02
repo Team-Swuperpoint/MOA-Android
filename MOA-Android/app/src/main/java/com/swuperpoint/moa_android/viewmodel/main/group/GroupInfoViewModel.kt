@@ -61,6 +61,9 @@ class GroupInfoViewModel: ViewModel() {
     }
 
     private fun getRelativeTimeString(dateString: String): String? {
+
+        if (dateString == "아직 모임이 없어요") return dateString
+
         try {
             val date = LocalDate.parse(dateString)
             val today = LocalDate.now()
@@ -80,7 +83,7 @@ class GroupInfoViewModel: ViewModel() {
             }
         } catch (e: Exception) {
             Log.e("GroupInfoViewModel", "Error calculating relative time", e)
-            return null
+            return dateString  // null 대신 원본 문자열 반환
         }
     }
 

@@ -23,13 +23,15 @@ class AddressFragment : BaseFragment<FragmentAddressBinding>(FragmentAddressBind
     private var addressList = ArrayList<AddressItem>() // 검색 결과 리스트
     private var addressAdapter = AddressRVAdapter(addressList) // 검색 결과 어댑터
     private var keyword: String? = null // 사용자가 입력한 검색 키워드
-    private var gatheringId: Long = 0 // 모임 id
+    private var gatheringId: String = "" // 모임 id, Long -> String 변경
+    private var groupId: String = ""  // groupId 추가
 
     @SuppressLint("SetTextI18n")
     override fun initViewCreated() {
         // 다른 화면에서 전달받은 모임id 설정
         val args: AddressFragmentArgs by navArgs()
         gatheringId = args.gatheringId
+        groupId = args.groupId
 
         // 툴바 설정
         binding.toolbarAddress.tvToolbarTitle.text = "출발 장소 검색"
@@ -45,7 +47,11 @@ class AddressFragment : BaseFragment<FragmentAddressBinding>(FragmentAddressBind
         // 출발 장소 클릭 이벤트
         addressAdapter.onClickListener = { item ->
             Log.d("출발 장소 선택!", item.toString())
-            val actionToGatheringPlace = AddressFragmentDirections.actionAddressFrmToGatheringPlaceFrm(gatheringId, item)
+            val actionToGatheringPlace = AddressFragmentDirections.actionAddressFrmToGatheringPlaceFrm(
+                gatheringId = gatheringId,
+                groupId = groupId,
+                addressInfo = item
+            )
             findNavController().navigate(actionToGatheringPlace)
         }
 

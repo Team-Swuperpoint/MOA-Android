@@ -2,6 +2,7 @@ package com.swuperpoint.moa_android.data.remote.model.group
 
 /* 모임 정보 조회 응답 모델 */
 data class GatheringInfoResponse(
+    val gatheringId: String, // 추가
     val gatheringName: String, // 모임 이름
     val date: String, // 모임 날짜
     val gatheringStartTime: String, // 모임 시작 시간
@@ -14,6 +15,6 @@ data class GatheringInfoResponse(
 
 /* 장소 좌표 */
 data class PlaceLocationResponse(
-    val latitude: Double, // 위도
-    val longitude: Double // 경도
+    val latitude: String, // 위도
+    val longitude: String // 경도
 )

@@ -201,7 +201,7 @@ class HomeViewModel : ViewModel() {
                         } else 0
 
                         val gathering = HomeGatheringItem(
-                            gatheringId = doc.id.hashCode().toLong(),
+                            gatheringId = doc.id,
                             groupName = groupName,
                             gatheringName = doc.getString("gatheringName") ?: "",
                             date = formatDate(

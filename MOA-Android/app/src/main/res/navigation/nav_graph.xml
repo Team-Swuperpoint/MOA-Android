@@ -105,10 +105,20 @@
         <!-- 모임 id -->
         <argument
             android:name="gatheringId"
-            app:argType="long"/>
+            app:argType="string"/>
+        <argument
+            android:name="groupId"
+            app:argType="string" />
         <action
             android:id="@+id/action_gatheringInfoFrm_to_gatheringPlaceFrm"
-            app:destination="@id/frm_gathering_place"/>
+            app:destination="@id/frm_gathering_place">
+            <argument
+                android:name="gatheringId"
+                app:argType="string"/>
+            <argument
+                android:name="groupId"
+                app:argType="string"/>
+        </action>
     </fragment>
 
     <!-- 중간 지점 찾기 -->
@@ -120,7 +130,10 @@
         <!-- 모임 id -->
         <argument
             android:name="gatheringId"
-            app:argType="long"/>
+            app:argType="string"/>
+        <argument
+            android:name="groupId"
+            app:argType="string"/>
         <argument
             android:name="addressInfo"
             app:argType="com.swuperpoint.moa_android.view.main.group.data.AddressItem"
@@ -144,7 +157,10 @@
         <!-- 모임 id -->
         <argument
             android:name="gatheringId"
-            app:argType="long"/>
+            app:argType="string"/>
+        <argument
+            android:name="groupId"
+            app:argType="string"/>
         <argument
             android:name="addressInfo"
             app:argType="com.swuperpoint.moa_android.view.main.group.data.AddressItem"

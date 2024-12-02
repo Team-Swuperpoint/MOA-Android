@@ -123,7 +123,10 @@ class GroupInfoFragment : BaseFragment<FragmentGroupInfoBinding>(FragmentGroupIn
         // 모임 버튼 클릭 이벤트
         gatheringAdapter.onClickListener = { position, gatheringId ->
             // 모임 정보 화면으로 이동
-            val actionToGatheringInfo = GroupInfoFragmentDirections.actionGroupInfoFrmToGatheringInfoFrm(gatheringId)
+            val actionToGatheringInfo = GroupInfoFragmentDirections.actionGroupInfoFrmToGatheringInfoFrm(
+                gatheringId = gatheringId,
+                groupId = groupId
+            )
             findNavController().navigate(actionToGatheringInfo)
         }
     }

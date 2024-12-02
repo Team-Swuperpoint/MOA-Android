@@ -98,12 +98,13 @@ class CreateGatheringFragment : BaseFragment<FragmentCreateGatheringBinding>(Fra
                     "gatheringId" to "",
                     "gatheringName" to binding.edtCreateGatheringTitle.text.toString(),
                     "date" to selectDate.toString(),
-                    "time" to binding.tvCreateGatheringStartTime.text.toString(), // 만남 시작 시간 저장
+                    "gatheringStartTime" to binding.tvCreateGatheringStartTime.text.toString(), // 만남 시작 시간 저장
+                    "gatheringEndTime" to binding.tvCreateGatheringEndTime.text.toString(),     // 종료 시간 추가
                     // TODO: location 필드 추가
                     "gatheringImgURL" to "",
                     "createdAt" to com.google.firebase.Timestamp.now()
                 )
-                
+
                 db.collection("groups")
                     .document(groupId)
                     .collection("gatherings")
