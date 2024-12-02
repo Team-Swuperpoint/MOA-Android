@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kapt)
     alias(libs.plugins.androidx.navigation.safeargs)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -89,4 +90,14 @@ dependencies {
     // 네이버 로그인 SDK 설정
     implementation(libs.navercorp.nid.oauth)
     implementation(libs.org.jetbrains.kotlinx)
+
+    // Gson
+    implementation(libs.gson)
+
+    // 카카오맵
+    implementation(libs.kakao.maps)
+
+    // Retrofit
+    implementation(libs.retrofit2.retrofit)
+    implementation(libs.retrofit2.converter.gson)
 }

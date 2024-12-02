@@ -95,7 +95,10 @@ class CreateGatheringFragment : BaseFragment<FragmentCreateGatheringBinding>(Fra
                 Log.d("모임 정보", "모임 이름: ${binding.edtCreateGatheringTitle.text} 모임 날짜: ${selectDate} " +
                         "모임 시작: ${binding.tvCreateGatheringStartTime.text} 모임 끝: ${binding.tvCreateGatheringEndTime.text}")
 
-                // TODO: 데이터 전송에 성공했다면 모임 정보 화면으로 이동
+                // TODO: 데이터 전송에 성공했다면, 데이터 응답값으로 받은 모임id를 활용해서 모임 정보 화면으로 이동
+                // FIXME: gatheringId값은 파이어베이스 응답으로 받은 모임id로 교체하기
+                val actionToGatheringInfo = CreateGatheringFragmentDirections.actionCreateGatheringFrmToGatheringInfoFrm(gatheringId = 0)
+                findNavController().navigate(actionToGatheringInfo)
             }
         }
 
