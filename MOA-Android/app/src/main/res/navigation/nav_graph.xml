@@ -237,6 +237,9 @@
         <action
             android:id="@+id/action_timelineFrm_to_createTimelineFrm"
             app:destination="@id/frm_create_timeline"/>
+        <action
+            android:id="@+id/action_timelineFrm_to_timelineInfoFrm"
+            app:destination="@id/frm_timeline_info"/>
     </fragment>
 
     <!-- 타임라인 만들기 -->
@@ -247,6 +250,26 @@
         tools:layout="@layout/fragment_create_timeline">
         <action
             android:id="@+id/action_createTimelineFrm_to_timelineFrm"
+            app:destination="@id/frm_timeline"/>
+        <action
+            android:id="@+id/action_createTimelineFrm_to_timelineInfoFrm"
+            app:destination="@id/frm_timeline_info"
+            app:popUpTo="@id/frm_create_timeline"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <!-- 타임라인 정보 -->
+    <fragment
+        android:id="@+id/frm_timeline_info"
+        android:name="com.swuperpoint.moa_android.view.main.timeline.TimelineInfoFragment"
+        android:label="frm_timeline_info"
+        tools:layout="@layout/fragment_timeline_info">
+        <!-- 타임라인 id -->
+        <argument
+            android:name="timelineId"
+            app:argType="string"/>
+        <action
+            android:id="@+id/action_timelineInfoFrm_to_timelineFrm"
             app:destination="@id/frm_timeline"/>
     </fragment>
 

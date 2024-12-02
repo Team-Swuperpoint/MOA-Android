@@ -7,7 +7,6 @@ import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.data.remote.model.timeline.TimelineResponse
 import com.swuperpoint.moa_android.databinding.ItemTimelineBinding
 import com.swuperpoint.moa_android.widget.ApplicationClass.Companion.applicationContext
-import okhttp3.internal.lockAndWaitNanos
 
 /* 타임라인 화면의 타임라인 RV 어댑터 */
 class TimelineRVViewHolder(val binding: ItemTimelineBinding): RecyclerView.ViewHolder(binding.root) {

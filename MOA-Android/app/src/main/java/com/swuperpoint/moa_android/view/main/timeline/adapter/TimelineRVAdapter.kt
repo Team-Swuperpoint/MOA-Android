@@ -40,4 +40,9 @@ class TimelineRVAdapter: RecyclerView.Adapter<TimelineRVViewHolder>() {
         this.timelineList = timelineList
         notifyDataSetChanged()
     }
+
+    // 타임라인 id 반환
+    fun getTimelineId(position: Int): String {
+        return timelineList[position].timelineId
+    }
 }

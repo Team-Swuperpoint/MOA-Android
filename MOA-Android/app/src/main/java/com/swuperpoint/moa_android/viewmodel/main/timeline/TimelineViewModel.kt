@@ -18,6 +18,7 @@ class TimelineViewModel: ViewModel() {
     fun fetchTimeline() {
         val dummyResponse = arrayListOf(
             TimelineResponse(
+                timelineId = "0",
                 date = "2024.10.18",
                 placeName = "서울 북촌",
                 groupName = "먹짱친구들",

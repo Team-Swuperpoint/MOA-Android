@@ -40,7 +40,9 @@ class TimelineFragment : BaseFragment<FragmentTimelineBinding>(FragmentTimelineB
 
         // 타임라인 1개 클릭 이벤트
         timelineAdapter.onClickListener = { pos ->
-            // TODO: 타임라인 정보 화면으로 이동
+            // 타임라인 정보 화면으로 이동
+            val actionToTimelineInfo = TimelineFragmentDirections.actionTimelineFrmToTimelineInfoFrm(timelineAdapter.getTimelineId(pos))
+            findNavController().navigate(actionToTimelineInfo)
         }
     }
 

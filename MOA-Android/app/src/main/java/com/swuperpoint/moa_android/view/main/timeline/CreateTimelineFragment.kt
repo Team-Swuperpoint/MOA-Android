@@ -123,7 +123,9 @@ class CreateTimelineFragment : BaseFragment<FragmentCreateTimelineBinding>(Fragm
             Log.d("타임라인 데이터", "selectedGroupId: $selectedGroupId, selectedGatheringId: $selectedGatheringId, photos: ${photoAdapter.getPhotos()}")
             if (isEnable) {
                 // TODO: 타임라인 만들기 API 호출
-                // TODO: 타임라인 만들기에 성공했다면 타임라인 정보 화면으로 이동
+                // TODO: 타임라인 만들기에 성공했다면, 응답 값으로 타임라인id 반환 및 타임라인 정보 화면으로 이동
+                val actionToTimelineInfo = CreateTimelineFragmentDirections.actionCreateTimelineFrmToTimelineInfoFrm(timelineId = "0")
+                findNavController().navigate(actionToTimelineInfo)
             }
         }
     }

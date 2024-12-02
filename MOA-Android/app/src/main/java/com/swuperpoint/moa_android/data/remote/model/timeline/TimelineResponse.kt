@@ -2,6 +2,7 @@ package com.swuperpoint.moa_android.data.remote.model.timeline
 
 /* 타임라인 화면의 데이터 응답 모델 */
 data class TimelineResponse(
+    val timelineId: String, // 타임라인 id
     val date: String, // 날짜
     val placeName: String, // 중간 지점 장소 이름
     val groupName: String, // 그룹 이름
