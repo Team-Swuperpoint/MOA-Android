@@ -43,29 +43,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
     override fun initAfterBinding() {
         // 어댑터 연결
-        val adapter = HomeGroupRVAdapter(homeViewModel.groupList.value)
+        val adapter = HomeGroupRVAdapter(ArrayList())  // null 대신 빈 ArrayList 전달
         binding.rvHomeGroup.adapter = adapter
 
         // 업데이트 관찰
         observe(adapter)
 
-        // 샘플 데이터
-        // TODO: 파이어베이스 연결시 삭제
-        val sampleResponse = HomeResponse(
-            nickname = "윤지",
-            groupList = homeViewModel.fetchGroupList(),
-            groupInfo = homeViewModel.fetchGatheringInfo()
-        )
-        homeViewModel.setHomeResponse(sampleResponse)
-
         // 이전 모임으로 이동
         binding.iBtnHomePrev.setOnClickListener {
-
+            homeViewModel.moveToPrevGathering()
         }
 
         // 다음 모임으로 이동
         binding.iBtnHomeNext.setOnClickListener {
-            
+            homeViewModel.moveToNextGathering()
         }
     }
 
@@ -73,21 +64,41 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private fun observe(adapter: HomeGroupRVAdapter) {
         // 모임 리스트 업데이트 관찰
         homeViewModel.groupList.observe(viewLifecycleOwner) { items ->
-            adapter.updateItems(items)
+            items?.let { adapter.updateItems(it) }  // null check 추가
         }
 
         // 닉네임 업데이트 관찰
         homeViewModel.nickname.observe(viewLifecycleOwner) { nickname ->
-            binding.tvHomeNickname.text = nickname
+            binding.tvHomeNickname.text = nickname ?: ""  // null check 추가
         }
 
         // 모임 정보 업데이트 관찰
         homeViewModel.gatheringInfo.observe(viewLifecycleOwner) { gatheringInfo ->
-            binding.tvHomeGroupName.text = gatheringInfo?.groupName ?: ""
-            binding.tvHomeGatheringName.text = gatheringInfo?.gatheringName ?: ""
-            binding.tvHomeTime.text = gatheringInfo?.date ?: ""
-            binding.tvHomeLocation.text = gatheringInfo?.location ?: ""
-            binding.tvHomeDday.text = gatheringInfo?.dDay.toString() ?: ""
+            if (gatheringInfo == null) {
+                // null일 경우 빈 값으로 설정
+                binding.tvHomeGroupName.text = ""
+                binding.tvHomeGatheringName.text = ""
+                binding.tvHomeTime.text = ""
+                binding.tvHomeLocation.text = ""
+                binding.tvHomeDday.text = ""
+                return@observe
+            }
+
+            // null이 아닐 경우에만 값 설정
+            binding.tvHomeGroupName.text = gatheringInfo.groupName
+            binding.tvHomeGatheringName.text = gatheringInfo.gatheringName
+            binding.tvHomeTime.text = gatheringInfo.date
+            binding.tvHomeLocation.text = gatheringInfo.location
+            binding.tvHomeDday.text = gatheringInfo.dDay.toString()
         }
+
+        adapter.onItemClickListener = { position ->
+            homeViewModel.fetchSelectedGroupGathering(position)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        homeViewModel.fetchHomeData()  // HomeViewModel에 fetchHomeData를 public으로 변경
     }
 }

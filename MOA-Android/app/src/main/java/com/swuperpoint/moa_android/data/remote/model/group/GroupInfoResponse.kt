@@ -7,13 +7,13 @@ data class GroupInfoResponse(
     val groupName: String,
     val recentGathering: String?,
     val groupCode: String,
-    val memberList: ArrayList<MemberResponse>,
-    val gatheringList: ArrayList<GroupGatheringResponse>?
+    var memberList: ArrayList<MemberResponse>, // val -> var로 변경
+    var gatheringList: ArrayList<GroupGatheringResponse>? // val -> var로 변경
 )
 
 /* 모임 1개 정보 데이터 응답 모델 */
 data class GroupGatheringResponse(
-    val gatheringId: Long,
+    val gatheringId: String,
     val gatheringName: String,
     val date: String,
     val gatheringImgURL: String

@@ -9,6 +9,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.prolificinteractive.materialcalendarview.CalendarDay
 import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.databinding.FragmentCreateGatheringBinding
@@ -22,9 +24,11 @@ import java.util.Calendar
 
 /* 모임 만들기 화면 */
 class CreateGatheringFragment : BaseFragment<FragmentCreateGatheringBinding>(FragmentCreateGatheringBinding::inflate) {
+    private val db = Firebase.firestore
     private var isEnable = false // 만들기 버튼 활성화 여부
     private lateinit var selectDate: LocalDate // 현재 사용자가 선택 중인 날짜
-    private var groupId: Long = 0 // 그룹id(pk)
+    private var groupId: String = "" // 그룹id(pk), String 타입으로 변경
+
 
     @SuppressLint("SetTextI18n")
     override fun initViewCreated() {
@@ -90,15 +94,46 @@ class CreateGatheringFragment : BaseFragment<FragmentCreateGatheringBinding>(Fra
         binding.btnCreateGatheringCreate.setOnClickListener {
             // 만들기 가능한 상태라면
             if (isEnable) {
-                showToast("새로운 모임을 만들었습니다")
-                // TODO: 파이어베이스에 데이터 전송
-                Log.d("모임 정보", "모임 이름: ${binding.edtCreateGatheringTitle.text} 모임 날짜: ${selectDate} " +
-                        "모임 시작: ${binding.tvCreateGatheringStartTime.text} 모임 끝: ${binding.tvCreateGatheringEndTime.text}")
+                val gathering = hashMapOf(
+                    "gatheringId" to "",
+                    "gatheringName" to binding.edtCreateGatheringTitle.text.toString(),
+                    "date" to selectDate.toString(),
+                    "gatheringStartTime" to binding.tvCreateGatheringStartTime.text.toString(), // 만남 시작 시간 저장
+                    "gatheringEndTime" to binding.tvCreateGatheringEndTime.text.toString(),     // 종료 시간 추가
+                    // TODO: location 필드 추가
+                    "gatheringImgURL" to "",
+                    "createdAt" to com.google.firebase.Timestamp.now()
+                )
 
-                // TODO: 데이터 전송에 성공했다면, 데이터 응답값으로 받은 모임id를 활용해서 모임 정보 화면으로 이동
-                // FIXME: gatheringId값은 파이어베이스 응답으로 받은 모임id로 교체하기
-                val actionToGatheringInfo = CreateGatheringFragmentDirections.actionCreateGatheringFrmToGatheringInfoFrm(gatheringId = 0)
-                findNavController().navigate(actionToGatheringInfo)
+                db.collection("groups")
+                    .document(groupId)
+                    .collection("gatherings")
+                    .add(gathering)
+                    .addOnSuccessListener { documentReference ->
+                        documentReference.update("gatheringId", documentReference.id)
+                            .addOnSuccessListener {
+                                // 그룹의 최근 모임 정보 업데이트
+                                db.collection("groups")
+                                    .document(groupId)
+                                    .update("recentGathering", selectDate.toString())
+                                    .addOnSuccessListener {
+                                        showToast("새로운 모임을 만들었습니다")
+                                        findNavController().popBackStack()
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e(
+                                            "CreateGathering",
+                                            "Error updating recentGathering",
+                                            e
+                                        )
+                                        showToast("모임 생성 중 오류가 발생했습니다")
+                                    }
+                            }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("CreateGathering", "Error creating gathering", e)
+                        showToast("모임 생성 중 오류가 발생했습니다")
+                    }
             }
         }
 

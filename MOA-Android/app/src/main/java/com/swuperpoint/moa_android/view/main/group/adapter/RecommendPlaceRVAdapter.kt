@@ -10,7 +10,7 @@ import com.swuperpoint.moa_android.databinding.ItemGatheringPlaceBinding
 /* 중간지점 찾기 화면의 추천 중간지점 RV 어댑터 */
 class RecommendPlaceRVAdapter: RecyclerView.Adapter<RecommendPlaceRVViewHolder>() {
     // 추천 중간 지점 리스트
-    private lateinit var placeList: List<RecommendPlaceResponse>
+    private var placeList: List<RecommendPlaceResponse> = emptyList()  // 빈 리스트로 초기화
 
     // 중간지점 선택 클릭 이벤트
     var onClickListener: ((Int) -> Unit)? = null

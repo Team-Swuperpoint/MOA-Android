@@ -9,11 +9,11 @@ import com.swuperpoint.moa_android.view.main.group.data.GatheringItem
 
 /* 그룹 정보 화면의 모임 정보 RV 어댑터 */
 class GroupGatheringRVAdapter: RecyclerView.Adapter<GroupGatheringRVViewHolder>() {
-    // 모임 리스트
-    private lateinit var gatheringList: List<GatheringItem>
+    // 모임 리스트 초기화
+    private var gatheringList: List<GatheringItem> = emptyList()
 
     // 모임 버튼 클릭 이벤트
-    var onClickListener: ((Int, Long) -> Unit)? = null
+    var onClickListener: ((Int, String) -> Unit)? = null // Long -> String으로 변경
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupGatheringRVViewHolder {
         val binding: ItemGroupGatheringBinding = ItemGroupGatheringBinding.inflate(

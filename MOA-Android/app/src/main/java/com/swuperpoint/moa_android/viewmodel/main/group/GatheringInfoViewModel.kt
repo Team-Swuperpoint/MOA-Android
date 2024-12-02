@@ -4,58 +4,131 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import android.content.Context
+import android.util.Log
 import com.swuperpoint.moa_android.data.remote.model.group.GatheringInfoResponse
 import com.swuperpoint.moa_android.data.remote.model.group.PlaceLocationResponse
+import com.swuperpoint.moa_android.util.Coordinate
+import com.swuperpoint.moa_android.util.MidpointCalculator
+import com.swuperpoint.moa_android.util.StationEvaluation
+import kotlinx.coroutines.launch
 
-/* 모임 정보 뷰모델 */
-class GatheringInfoViewModel: ViewModel() {
+class GatheringInfoViewModel : ViewModel() {
+    private val db = Firebase.firestore
     private val _response = MutableLiveData<GatheringInfoResponse>()
     val response: LiveData<GatheringInfoResponse> get() = _response
 
-    // 모임 이름
+    private lateinit var midpointCalculator: MidpointCalculator
+
+    // LiveData mappings...
     var gatheringName: LiveData<String> = _response.map { it.gatheringName }
-
-    // 모임 날짜
     var gatheringDate: LiveData<String> = _response.map { it.date }
-
-    // 모임 시작 시간
     var gatheringStartTime: LiveData<String> = _response.map { it.gatheringStartTime }
-
-    // 모임 끝 시간
     var gatheringEndTime: LiveData<String> = _response.map { it.gatheringEndTime }
-
-    // 모임 중간 지점
     var placeName: LiveData<String?> = _response.map { it.placeName }
-
-    // 지하철 소요 시간
     var subwayTime: LiveData<String?> = _response.map { it.subwayTime }
-
-    // 사용자의 출발 좌표
     var startPlace: LiveData<PlaceLocationResponse?> = _response.map { it.startPlace }
-
-    // 중간지점 좌표
     var gatheringPlace: LiveData<PlaceLocationResponse?> = _response.map { it.gatheringPlace }
 
-    // TODO: 파이어베이스에서 데이터 가져오기
-    fun fetchGatheringInfo(gatheringId: Long) {
-        // FIXME: 현재는 더미데이터 적용. 파이어베이스 로직으로 변경하기
-        val dummyResponse = GatheringInfoResponse(
-            "빵순이투어🥐",
-            "10월 18일 (금)",
-            "15:00",
-            "18:00",
-            "상왕십리역 2호선",
-            "40분",
-            PlaceLocationResponse(
-                37.5939491407769,
-                127.054890960564
-            ),
-            PlaceLocationResponse(
-                37.6273815936787,
-                127.091621159803
-            )
+    // Context 초기화를 위한 함수
+    fun initContext(context: Context) {
+        midpointCalculator = MidpointCalculator(context)
+    }
+
+    // groupId 파라미터 추가
+    fun fetchGatheringInfo(groupId: String, gatheringId: String) {
+        Log.d("GatheringInfo", "Fetching info for gathering: $gatheringId in group: $groupId")
+
+        db.collection("groups")
+            .document(groupId)
+            .collection("gatherings")
+            .document(gatheringId)
+            .get()
+            .addOnSuccessListener { gatheringDoc ->
+                if (gatheringDoc.exists()) {
+                    val gatheringInfo = GatheringInfoResponse(
+                        gatheringId = gatheringId,
+                        gatheringName = gatheringDoc.getString("gatheringName") ?: "",
+                        date = gatheringDoc.getString("date") ?: "",
+                        gatheringStartTime = gatheringDoc.getString("gatheringStartTime") ?: "",  // 필드명 수정
+                        gatheringEndTime = gatheringDoc.getString("gatheringEndTime") ?: "",      // 필드명 수정
+                        placeName = gatheringDoc.getString("placeName"),
+                        subwayTime = gatheringDoc.getString("subwayTime"),
+                        startPlace = null,
+                        gatheringPlace = null
+                    )
+
+                    Log.d("GatheringInfo", "Document data: ${gatheringDoc.data}")
+                    Log.d("GatheringInfo", "Gathering Response: $gatheringInfo")
+
+                    _response.value = gatheringInfo
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("GatheringInfo", "Error fetching gathering info", e)
+            }
+    }
+
+    fun calculateMidpoint(startCoordinates: List<Coordinate>) {
+        viewModelScope.launch {
+            try {
+                val bestStation = midpointCalculator.findBestStation(startCoordinates)
+                if (bestStation != null) {
+                    // 현재의 Response를 복사하고 중간 지점 정보 업데이트
+                    _response.value = _response.value?.copy(
+                        placeName = bestStation.station,
+                        subwayTime = "${bestStation.maxTime}분",
+                        gatheringPlace = PlaceLocationResponse(
+                            bestStation.coordinates.lat,
+                            bestStation.coordinates.lon
+                        )
+                    )
+
+                    // Firebase에 중간 지점 정보 업데이트
+                    updateMidpointInFirebase(bestStation)
+                }
+            } catch (e: Exception) {
+                Log.e("GatheringInfoViewModel", "Error calculating midpoint", e)
+            }
+        }
+    }
+
+    private fun updateMidpointInFirebase(station: StationEvaluation) {
+        val gatheringId = _response.value?.gatheringId ?: return
+
+        val placeData = hashMapOf(
+            "name" to station.station,
+            "latitude" to station.coordinates.lat,
+            "longitude" to station.coordinates.lon,
+            "subwayTime" to "${station.maxTime}분"
         )
-        // 데이터 업로드
-        _response.value = dummyResponse
+
+        db.collection("groups")
+            .get()
+            .addOnSuccessListener { groupsSnapshot ->
+                for (groupDoc in groupsSnapshot.documents) {
+                    groupDoc.reference.collection("gatherings")
+                        .document(gatheringId)
+                        .update("place", placeData)
+                        .addOnFailureListener { e ->
+                            Log.e("GatheringInfoViewModel", "Error updating place data", e)
+                        }
+                }
+            }
+    }
+
+    private fun formatDate(dateString: String): String {
+        try {
+            val dateParts = dateString.split("-")
+            if (dateParts.size == 3) {
+                return "${dateParts[1]}월 ${dateParts[2]}일"
+            }
+        } catch (e: Exception) {
+            Log.e("GatheringInfoViewModel", "Error formatting date", e)
+        }
+        return dateString
     }
 }

@@ -15,6 +15,7 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
     private val viewModel: MemberViewModel by viewModels() // 뷰모델
     private val adapter = MemberRVAdapter() // 어댑터
     private var isEdit = false // 편집 모드 여부
+    private val args: MemberFragmentArgs by navArgs() // groupId를 클래스 레벨로 이동
 
     @SuppressLint("SetTextI18n")
     override fun initViewCreated() {
@@ -24,8 +25,6 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
         // 상태바 색상 변경
         changeStatusbarColor(R.color.white, isLightMode = true)
 
-        val args: MemberFragmentArgs by navArgs()
-        // TODO: 전달받은 groupId(args.groupId)로 파이어베이스에서 그룹원 리스트 검색 -> 전달받은 정보로 화면 구성
         // 데이터 로드
         viewModel.fetchMembers(args.groupId)
 
@@ -43,9 +42,22 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
 
     // LiveData 관찰
     private fun observeViewModel() {
+        // 멤버 목록 관찰
         viewModel.memberList.observe(viewLifecycleOwner) { members ->
             adapter.updateMembers(members)
             binding.tvMemberNum.text = adapter.itemCount.toString()
+        }
+
+        // 삭제 결과 관찰
+        viewModel.deleteResult.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
+                adapter.showDeleteBtn(false)
+                binding.tvMemberEdit.text = "편집"
+                isEdit = false
+                showToast("그룹원을 삭제했습니다")
+            } else {
+                showToast("삭제에 실패했습니다")
+            }
         }
     }
 
@@ -71,12 +83,19 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
 
         // 삭제 버튼 클릭 이벤트
         adapter.onDeleteBtnClickListener = { position ->
-            // TODO: 팀원 삭제 api 연결 후, adapter에 있는 데이터 삭제하기
-            viewModel.deleteMember(position)
-            adapter.showDeleteBtn(false)
-            binding.tvMemberNum.text = adapter.itemCount.toString()
-            binding.tvMemberEdit.text = "편집"
-            showToast("그룹원을 삭제했습니다")
+            showDeleteConfirmDialog(position)
         }
+    }
+
+    // 삭제 확인 다이얼로그
+    private fun showDeleteConfirmDialog(position: Int) {
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("그룹원 삭제")
+            .setMessage("정말로 이 그룹원을 삭제하시겠습니까?")
+            .setPositiveButton("삭제") { _, _ ->
+                viewModel.deleteMember(args.groupId, position)
+            }
+            .setNegativeButton("취소", null)
+            .show()
     }
 }

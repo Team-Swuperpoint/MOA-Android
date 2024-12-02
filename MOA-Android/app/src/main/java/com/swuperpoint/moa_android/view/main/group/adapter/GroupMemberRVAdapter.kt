@@ -9,8 +9,8 @@ import com.swuperpoint.moa_android.view.main.group.data.MemberItem
 
 /* 그룹 정보 화면의 그룹원 RV 어댑터 */
 class GroupMemberRVAdapter: RecyclerView.Adapter<GroupMemberRVViewHolder>() {
-    // 그룹원 리스트
-    private lateinit var memberList: List<MemberItem>
+    // 그룹원 리스트 초기화
+    private var memberList: List<MemberItem> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupMemberRVViewHolder {
         val binding: ItemGroupMemberBinding = ItemGroupMemberBinding.inflate(
