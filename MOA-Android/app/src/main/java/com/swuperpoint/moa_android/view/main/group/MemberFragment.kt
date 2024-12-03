@@ -59,6 +59,13 @@ class MemberFragment : BaseFragment<FragmentMemberBinding>(FragmentMemberBinding
                 showToast("삭제에 실패했습니다")
             }
         }
+
+        // 삭제 에러 메시지 관찰
+        viewModel.deleteErrorMessage.observe(viewLifecycleOwner) { message ->
+            message?.let {
+                showToast(it)
+            }
+        }
     }
 
     // 클릭 이벤트
