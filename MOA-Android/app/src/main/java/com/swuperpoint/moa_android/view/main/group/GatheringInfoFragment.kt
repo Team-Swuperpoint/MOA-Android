@@ -76,13 +76,22 @@ class GatheringInfoFragment : BaseFragment<FragmentGatheringInfoBinding>(Fragmen
 
         // 중간 지점 정보 관찰
         viewModel.placeName.observe(viewLifecycleOwner) { place ->
-            binding.tvGatheringInfoPlace.text = place
+            binding.tvGatheringInfoPlace.text = place ?: "중간 지점 입력하기"
         }
 
         // 소요 시간 관찰
         viewModel.subwayTime.observe(viewLifecycleOwner) { time ->
-            binding.tvGatheringInfoSubwayTime.text = time
+            if (time.isNullOrEmpty()) {
+                // 시간 정보가 없을 때, "소요시간" 전체 표시
+                binding.tvGatheringInfoSubwayTime.text = "소요시간"
+                binding.tvGatheringInfoSubway.visibility = View.GONE
+            } else {
+                // 시간 정보가 있을 때, "n분 소요" 형태 표시
+                binding.tvGatheringInfoSubwayTime.text = time
+                binding.tvGatheringInfoSubway.visibility = View.VISIBLE
+            }
         }
+
 
         // 좌표 정보 관찰
         // TODO: 사용자의 출발 좌표, 모임 좌표를 관찰하고 지도에 마커 추가하기
