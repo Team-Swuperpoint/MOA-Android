@@ -5,11 +5,22 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.kakao.vectormap.KakaoMap
+import com.kakao.vectormap.KakaoMapReadyCallback
+import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.camera.CameraUpdateFactory
+import com.kakao.vectormap.label.LabelStyle
+import com.kakao.vectormap.label.LabelStyles
+import com.kakao.vectormap.label.LabelOptions
 import com.swuperpoint.moa_android.R
+import com.swuperpoint.moa_android.data.remote.model.group.PlaceLocationResponse
 import com.swuperpoint.moa_android.databinding.FragmentGatheringInfoBinding
 import com.swuperpoint.moa_android.view.base.BaseFragment
 import com.swuperpoint.moa_android.viewmodel.main.group.GatheringInfoViewModel
@@ -23,6 +34,10 @@ class GatheringInfoFragment : BaseFragment<FragmentGatheringInfoBinding>(Fragmen
     private var startTime: String = "" // 모임 시작 시간
     private var endTime: String = "" // 모임 종료 시간
 
+    private var kakaoMap: KakaoMap? = null  // 카카오맵 객체 저장용
+    private var pendingPlace: PlaceLocationResponse? = null  // 맵이 준비되기 전에 받은 장소 데이터를 저장
+
+
     override fun initViewCreated() {
         // 다른 화면에서 전달받은 모임id 설정
         val args: GatheringInfoFragmentArgs by navArgs()
@@ -32,7 +47,6 @@ class GatheringInfoFragment : BaseFragment<FragmentGatheringInfoBinding>(Fragmen
         // 상태바 색상 변경
         changeStatusbarColor(R.color.white, isLightMode = true)
 
-        // TODO: 모임id를 바탕으로 파이어베이스에서 모임 정보 검색 -> 전달받은 정보로 화면 구성
         // groupId도 같이 전달받아야 함
         val groupId = args.groupId
 
@@ -41,6 +55,78 @@ class GatheringInfoFragment : BaseFragment<FragmentGatheringInfoBinding>(Fragmen
 
         // LiveData 관찰
         observeViewModel()
+        initializeMap()
+    }
+
+    private fun initializeMap() {
+        val mapLifeCycleCallback = object : MapLifeCycleCallback() {
+            override fun onMapDestroy() {
+                kakaoMap = null
+            }
+
+            override fun onMapError(error: Exception) {
+                Log.e("KakaoMap", "맵 로드 에러", error)
+                showToast("지도 로드 중 오류가 발생했습니다")
+            }
+        }
+
+        val mapReadyCallback = object : KakaoMapReadyCallback() {
+            override fun onMapReady(map: KakaoMap) {
+                Log.d("KakaoMap", "맵이 준비되었습니다")
+                kakaoMap = map
+                // 맵이 준비되었을 때 pendingPlace가 있다면 표시
+                pendingPlace?.let { place ->
+                    updateMapMarker(place)
+                }
+            }
+        }
+
+        binding.mapView.start(mapLifeCycleCallback, mapReadyCallback)
+    }
+
+    private fun updateMapMarker(place: PlaceLocationResponse) {
+        kakaoMap?.let { map ->
+            try {
+                val position = LatLng.from(
+                    place.latitude.toDouble(),
+                    place.longitude.toDouble()
+                )
+
+                // 카메라 이동
+                map.moveCamera(CameraUpdateFactory.newCenterPosition(position, 15))
+
+                val layer = map.labelManager?.layer
+                layer?.removeAll()
+
+                // 비트맵 리사이징
+                val originalBitmap = BitmapFactory.decodeResource(resources, R.drawable.ic_map_marker_png)
+                val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, 48, 48, true)
+
+                // 아이콘 스타일 생성 (리사이즈된 비트맵 사용)
+                val markerStyle = LabelStyle.from(resizedBitmap)
+                    .setZoomLevel(1)
+                    .setAnchorPoint(0f, 1.2f)
+
+                // 아이콘 라벨 추가
+                layer?.addLabel(
+                    LabelOptions.from(position).apply {
+                        setStyles(map.labelManager?.addLabelStyles(
+                            LabelStyles.from("markerStyle", markerStyle)
+                        ))
+                    }
+                )
+
+                binding.lLayoutGatheringInfoNoPlace.visibility = View.GONE
+                binding.mapContainer.visibility = View.VISIBLE
+
+            } catch (e: Exception) {
+                Log.e("KakaoMap", "마커 업데이트 중 에러: ${e.message}", e)
+                e.printStackTrace()
+                showToast("위치 표시 중 오류가 발생했습니다")
+            }
+        } ?: run {
+            Log.e("KakaoMap", "Map is not initialized")
+        }
     }
 
     override fun initAfterBinding() {
@@ -76,7 +162,11 @@ class GatheringInfoFragment : BaseFragment<FragmentGatheringInfoBinding>(Fragmen
 
         // 중간 지점 정보 관찰
         viewModel.placeName.observe(viewLifecycleOwner) { place ->
-            binding.tvGatheringInfoPlace.text = place ?: "중간 지점 입력하기"
+            binding.tvGatheringInfoPlace.text = if (place.isNullOrEmpty()) {
+                "중간 지점 입력하기"
+            } else {
+                "${place}역"
+            }
         }
 
         // 소요 시간 관찰
@@ -94,21 +184,34 @@ class GatheringInfoFragment : BaseFragment<FragmentGatheringInfoBinding>(Fragmen
 
 
         // 좌표 정보 관찰
-        // TODO: 사용자의 출발 좌표, 모임 좌표를 관찰하고 지도에 마커 추가하기
+        // TODO: 사용자의 출발 좌표도 함께 지도에 마커 추가하기
         viewModel.gatheringPlace.observe(viewLifecycleOwner) { place ->
             // 좌표가 없다면
             if (place == null) {
                 // default 뷰 띄우기
                 binding.lLayoutGatheringInfoNoPlace.visibility = View.VISIBLE
+                binding.mapContainer.visibility = View.GONE
             }
             // 좌표가 있다면
             else {
-                // default 뷰 숨기기
                 binding.lLayoutGatheringInfoNoPlace.visibility = View.GONE
-
-                // TODO: 지도 띄우기
+                binding.mapContainer.visibility = View.VISIBLE
+                pendingPlace = place
+                kakaoMap?.let {
+                    updateMapMarker(place)
+                }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.mapView.resume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.mapView.pause()
     }
 
     // 모임 일정 업데이트
