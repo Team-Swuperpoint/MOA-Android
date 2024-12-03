@@ -129,26 +129,28 @@ class GroupInfoViewModel: ViewModel() {
             .document(groupId)
             .get()
             .addOnSuccessListener { groupDoc ->
-                // 그룹 문서에서 memberEmails 배열 가져오기(그룹장 포함)
-                val memberEmails = groupDoc.get("memberEmails") as? List<String> ?: listOf()
+                // 그룹 문서에서 memberUIDs 배열 가져오기(그룹장 포함)
+                val creatorUID = groupDoc.getString("createdBy")
+                val memberUIDs = groupDoc.get("memberUIDs") as? List<String> ?: listOf()
+
                 var completedQueries = 0
 
-                if (memberEmails.isEmpty()) {
-                    // memberEmails가 비어있으면 빈 리스트 반환
+                if (memberUIDs.isEmpty()) {
+                    // memberUIDs가 비어있으면 빈 리스트 반환
                     callback(memberList)
                     return@addOnSuccessListener
                 }
 
-                // memberEmails의 각 이메일에 대해 users 컬렉션에서 상세 정보 조회
-                memberEmails.forEach { email ->
+                // memberUIDs의 각 uid에 대해 users 컬렉션에서 상세 정보 조회
+                memberUIDs.forEach { uid ->
                     db.collection("users")
-                        .document(email)
+                        .document(uid)
                         .get()
                         .addOnSuccessListener { userDoc ->
                             if (userDoc.exists()) {
                                 // users 컬렉션에서 가져온 사용자 정보로 MemberResponse 객체 생성
                                 val member = MemberResponse(
-                                    memberId = userDoc.id, // 이메일을 id로 사용
+                                    memberId = userDoc.id,
                                     profileImgURL = userDoc.getString("profile") ?: "",
                                     memberName = userDoc.getString("nickname") ?: ""
                                 )
@@ -156,47 +158,19 @@ class GroupInfoViewModel: ViewModel() {
                             }
 
                             completedQueries++
-                            // 모든 memberEmails 처리가 완료되면 members 서브컬렉션 조회 시작
-                            if (completedQueries == memberEmails.size) {
-                                // 그룹의 members 서브컬렉션 조회 (추가된 멤버들)
-                                db.collection("groups")
-                                    .document(groupId)
-                                    .collection("members")
-                                    .get()
-                                    .addOnSuccessListener { querySnapshot ->
-                                        for (document in querySnapshot.documents) {
-                                            // memberEmails에 없는 멤버만 추가(중복 방지)
-                                            if (!memberList.any { it.memberId == document.id }) {
-                                                val member = MemberResponse(
-                                                    memberId = document.id,
-                                                    profileImgURL = document.getString("profile") ?: "",
-                                                    memberName = document.getString("nickname") ?: ""
-                                                )
-                                                memberList.add(member)
-                                            }
-                                        }
-                                        // 최종 리스트 콜백
-                                        // callback(memberList)
-
-                                        // creatorEmail 가져오기
-                                        val creatorEmail = groupDoc.getString("createdBy") ?: memberEmails.firstOrNull()
-                                        // 그룹장이 맨 위로 오도록 정렬한 뒤 콜백
-                                        val sortedList = ArrayList(memberList.sortedWith(
-                                            compareBy<MemberResponse> { it.memberId != creatorEmail }
-                                                .thenBy { it.memberName }  // 이름순
-                                        ))
-                                        callback(sortedList)
-                                    }
-                                    .addOnFailureListener { e ->
-                                        Log.e("GroupInfoViewModel", "그룹원 목록 조회 실패", e)
-                                        callback(memberList)  // members 컬렉션 조회 실패시 memberEmails만 반환
-                                    }
+                            // 모든 memberUIDs 처리가 완료되면 최종 리스트 전달
+                            if (completedQueries == memberUIDs.size) {
+                                // 그룹장이 맨 위로 오도록 정렬한 뒤 콜백
+                                val sortedList = ArrayList(memberList.sortedWith(
+                                    compareBy<MemberResponse> { it.memberId != creatorUID }
+                                        .thenBy { it.memberName } // 이름순
+                                ))
+                                callback(sortedList)
                             }
                         }
                         .addOnFailureListener { e ->
-                            Log.e("GroupInfoViewModel", "사용자 정보 조회 실패: ${email}", e)
                             completedQueries++
-                            if (completedQueries == memberEmails.size) {
+                            if (completedQueries == memberUIDs.size) {
                                 callback(memberList)
                             }
                         }

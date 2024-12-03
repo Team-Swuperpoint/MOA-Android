@@ -49,11 +49,11 @@ class GroupViewModel: ViewModel() {
     }
 
     private fun setupGroupsListener() {
-        // 현재 로그인한 사용자의 이메일 가져오기
-        val currentUserEmail = auth.currentUser?.email ?: return
+        // 현재 로그인한 사용자의 UID 가져오기
+        val currentUserUid = auth.currentUser?.uid ?: return
 
         groupsListener = db.collection("groups")
-            .whereArrayContains("memberEmails", currentUserEmail)  // 현재 사용자가 멤버로 속해있는 그룹만 필터링
+            .whereArrayContains("memberUIDs", currentUserUid) // 현재 사용자가 멤버로 속해있는 그룹만 필터링
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
@@ -62,7 +62,7 @@ class GroupViewModel: ViewModel() {
                 }
 
                 if (snapshot != null) {
-                    val deferredGroups = ArrayList<Triple<DocumentSnapshot, String, Int>>() // memberCount 추가
+                    val deferredGroups = ArrayList<Triple<DocumentSnapshot, String, Int>>()
                     var processedGroups = 0
 
                     if (snapshot.documents.isEmpty()) {
@@ -76,49 +76,44 @@ class GroupViewModel: ViewModel() {
                             // 멤버 수와 모임 정보 동시에 가져오기
                             val groupDoc = db.collection("groups").document(document.id)
 
-                            // 멤버 수 가져오기
-                            groupDoc.collection("members").get().addOnSuccessListener { membersSnapshot ->
-                                // 사용자 본인도 포함되기 때문에 +1
-                                val memberCount = membersSnapshot.size() + 1
+                            // 멤버 수 계산
+                            val memberUIDs = document.get("memberUIDs") as? List<String> ?: listOf()
+                            val memberCount = memberUIDs.size
 
-                                // 모임 정보 가져오기
-                                groupDoc.collection("gatherings").get()
-                                    .addOnSuccessListener { gatherings ->
-                                        val recentGathering = processGatherings(gatherings.documents)
+                            // 모임 정보 가져오기
+                            groupDoc.collection("gatherings").get()
+                                .addOnSuccessListener { gatherings ->
+                                    val recentGathering = processGatherings(gatherings.documents)
 
-                                        deferredGroups.add(Triple(document, recentGathering, memberCount))
-                                        processedGroups++
+                                    deferredGroups.add(Triple(document, recentGathering, memberCount))
+                                    processedGroups++
 
-                                        // 모든 그룹 처리가 완료되면
-                                        if (processedGroups == snapshot.documents.size) {
-                                            // createdAt 기준으로 다시 정렬
-                                            val sortedGroups = deferredGroups.sortedByDescending {
-                                                it.first.getTimestamp("createdAt")?.toDate()
-                                            }
-
-                                            // 정렬된 순서대로 GroupResponse 생성
-                                            val groupsList = sortedGroups.map { (doc, gathering, memberCount) ->
-                                                GroupResponse(
-                                                    groupId = doc.id,
-                                                    bgColor = (doc.get("bgColor") as? Long)?.toInt() ?: 0,
-                                                    emoji = doc.getString("emoji") ?: "",
-                                                    groupName = doc.getString("groupName") ?: "",
-                                                    groupMemberNum = memberCount,
-                                                    recentGathering = gathering
-                                                )
-                                            }
-
-                                            _groupResponse.postValue(ArrayList(groupsList))
+                                    // 모든 그룹 처리가 완료되면
+                                    if (processedGroups == snapshot.documents.size) {
+                                        // createdAt 기준으로 다시 정렬
+                                        val sortedGroups = deferredGroups.sortedByDescending {
+                                            it.first.getTimestamp("createdAt")?.toDate()
                                         }
+
+                                        // 정렬된 순서대로 GroupResponse 생성
+                                        val groupsList = sortedGroups.map { (doc, gathering, count) ->
+                                            GroupResponse(
+                                                groupId = doc.id,
+                                                bgColor = (doc.get("bgColor") as? Long)?.toInt() ?: 0,
+                                                emoji = doc.getString("emoji") ?: "",
+                                                groupName = doc.getString("groupName") ?: "",
+                                                groupMemberNum = count,
+                                                recentGathering = gathering
+                                            )
+                                        }
+
+                                        _groupResponse.postValue(ArrayList(groupsList))
                                     }
-                                    .addOnFailureListener { error ->
-                                        Log.e("GroupViewModel", "모임 정보 조회 실패", error)
-                                        processedGroups++
-                                    }
-                            }.addOnFailureListener { error ->
-                                Log.e("GroupViewModel", "그릅원 목록 조회 실패", error)
-                                processedGroups++
-                            }
+                                }
+                                .addOnFailureListener { error ->
+                                    Log.e("GroupViewModel", "모임 정보 조회 실패", error)
+                                    processedGroups++
+                                }
                         } catch (e: Exception) {
                             Log.e("GroupViewModel", "문서 처리 중 오류 발생: ${document.id}", e)
                             processedGroups++

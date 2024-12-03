@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -26,6 +27,7 @@ class HomeViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val _homeResponse = MutableLiveData<HomeResponse>() // 내부 수정용 변수
     val homeResponse: LiveData<HomeResponse> get() = _homeResponse // 외부 읽기 전용 변수
+    private val auth = Firebase.auth
 
     // 현재 선택된 위치를 추적하는 변수
     private var currentPosition = 0
@@ -91,38 +93,38 @@ class HomeViewModel : ViewModel() {
     }
 
     public fun fetchHomeData() {
-        // 네이버 로그인 SDK에서 현재 로그인된 계정의 이메일 가져오기
-        NidOAuthLogin().callProfileApi(object : NidProfileCallback<NidProfileResponse> {
-            override fun onSuccess(result: NidProfileResponse) {
-                val email = result.profile?.email
-                if (email != null) {
-                    // users 컬렉션에서 해당 이메일을 document ID로 가진 문서 조회
-                    db.collection("users")
-                        .document(email)
-                        .get()
-                        .addOnSuccessListener { document ->
-                            if (document.exists()) {
-                                val nickname = document.getString("nickname")
-                                fetchGroupsWithUserName(nickname ?: "사용자")
-                            }
-                        }
-                }
-            }
+        // 현재 로그인한 사용자의 UID 가져오기
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            Log.e("HomeViewModel", "로그인된 사용자를 찾을 수 없습니다")
+            return
+        }
 
-            override fun onFailure(httpStatus: Int, message: String) {
-                fetchGroupsWithUserName("사용자")
+        // users 컬렉션에서 현재 사용자의 정보 조회
+        db.collection("users")
+            .document(currentUser.uid)
+            .get()
+            .addOnSuccessListener { document ->
+                // 닉네임 가져오기 (없을 경우 "사용자"로 표시)
+                val nickname = document.getString("nickname") ?: "사용자"
+                // 먼저 닉네임만 표시하도록 HomeResponse 생성하여 화면 업데이트
+                _homeResponse.postValue(HomeResponse(nickname, arrayListOf(), null))
+                // 이후 해당 사용자의 그룹 및 모임 정보 조회 시작
+                fetchGroupsForCurrentUser(nickname)
             }
-
-            override fun onError(errorCode: Int, message: String) {
-                fetchGroupsWithUserName("사용자")
+            .addOnFailureListener { e ->
+                Log.e("HomeViewModel", "사용자 정보 조회 실패", e)
+                // 사용자 정보 조회 실패 시 기본값으로 화면 표시
+                _homeResponse.postValue(HomeResponse("사용자", arrayListOf(), null))
             }
-        })
     }
 
-    private fun fetchGroupsWithUserName(userName: String) {
+    private fun fetchGroupsForCurrentUser(userName: String) {
         Log.d("HomeViewModel", "Fetching groups with username: $userName")
+        val currentUserUid = auth.currentUser?.uid ?: return
 
         db.collection("groups")
+            .whereArrayContains("memberUIDs", currentUserUid)  // uid로 조회하도록 수정
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
                     Log.e("HomeViewModel", "Listen failed.", e)

@@ -81,9 +81,8 @@ class CreateGroupFragment : BaseFragment<FragmentCreateGroupBinding>(FragmentCre
         binding.btnCreateGroupCreate.setOnClickListener {
             // 추가 가능한 상태라면
             if (isEnable) {
-
-                val currentUserEmail = auth.currentUser?.email  // 현재 사용자 이메일 가져오기
-                if (currentUserEmail == null) {
+                val currentUser = auth.currentUser
+                if (currentUser == null) {
                     showToast("사용자 정보를 찾을 수 없습니다.")
                     return@setOnClickListener
                 }
@@ -99,7 +98,8 @@ class CreateGroupFragment : BaseFragment<FragmentCreateGroupBinding>(FragmentCre
                     "bgColor" to (0..5).random(),
                     "recentGathering" to "아직 모임이 없어요",
                     "createdAt" to com.google.firebase.Timestamp.now(),  // 생성 시간 추가
-                    "memberEmails" to arrayListOf(currentUserEmail)
+                    "memberUIDs" to arrayListOf(currentUser.uid),  // memberEmails 대신 memberUIDs 사용
+                    "createdBy" to currentUser.uid  // 이메일 대신 UID 저장
                 )
 
                 // Firestore에 그룹 정보 저장

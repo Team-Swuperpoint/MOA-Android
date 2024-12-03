@@ -30,87 +30,60 @@ class MemberViewModel: ViewModel() {
     private val _deleteErrorMessage = MutableLiveData<String>()
     val deleteErrorMessage: LiveData<String> = _deleteErrorMessage
 
+    // 그룹원 목록 조회
     fun fetchMembers(groupId: String) {
-        val currentUserEmail = auth.currentUser?.email ?: return
+        val currentUserUid = auth.currentUser?.uid ?: return
         val membersList = mutableListOf<MemberResponse>()
 
-        // 먼저 그룹 문서에서 memberEmails 정보를 가져옴
+        // 그룹 문서에서 멤버 UID 목록과 그룹장 UID 조회
         db.collection("groups")
             .document(groupId)
             .get()
             .addOnSuccessListener { groupDoc ->
-                val memberEmails = groupDoc.get("memberEmails") as? List<String> ?: listOf()
-                val creatorEmail = groupDoc.getString("createdBy") ?: memberEmails.firstOrNull() // createdBy 필드로 그룹장 확인
-                _isCreator.value = (currentUserEmail == creatorEmail)
+                val memberUIDs = groupDoc.get("memberUIDs") as? List<String> ?: listOf()
+                val creatorUID = groupDoc.getString("createdBy")
+                // 현재 사용자가 그룹장인지 확인
+                _isCreator.value = (currentUserUid == creatorUID)
 
-                // members 서브컬렉션도 조회
-                db.collection("groups")
-                    .document(groupId)
-                    .collection("members")
-                    .get()
-                    .addOnSuccessListener { membersSnapshot ->
-                        // 서브컬렉션의 멤버들 추가
-                        membersSnapshot.documents.forEach { doc ->
-                            val member = MemberResponse(
-                                memberId = doc.id,
-                                profileImgURL = doc.getString("profile") ?: "",
-                                memberName = doc.getString("nickname") ?: ""
-                            )
-                            if (!membersList.any { it.memberId == member.memberId }) {
+                var completedQueries = 0
+
+                // 각 멤버의 상세 정보 조회
+                memberUIDs.forEach { uid ->
+                    db.collection("users")
+                        .document(uid)
+                        .get()
+                        .addOnSuccessListener { userDoc ->
+                            if (userDoc.exists()) {
+                                val member = MemberResponse(
+                                    memberId = userDoc.id,
+                                    profileImgURL = userDoc.getString("profile") ?: "",
+                                    memberName = userDoc.getString("nickname") ?: ""
+                                )
                                 membersList.add(member)
                             }
+
+                            completedQueries++
+
+                            // 모든 멤버 정보 조회가 완료되면 UI 업데이트
+                            if (completedQueries == memberUIDs.size) {
+                                val memberItems = membersList.map { member ->
+                                    MemberItem(
+                                        memberId = member.memberId,
+                                        profileImgURL = member.profileImgURL,
+                                        memberName = member.memberName,
+                                        isEdit = false,
+                                        isCreator = member.memberId == creatorUID,
+                                        isCurrentUser = member.memberId == currentUserUid
+                                    )
+                                    // 그룹장이 맨 위로 오도록 정렬, 그 다음은 이름순
+                                }.sortedWith(compareBy<MemberItem> { !it.isCreator }
+                                    .thenBy { it.memberName })
+
+                                memberList.value = memberItems
+                            }
                         }
-
-                        // memberEmails에서 추가 정보 조회
-                        var completedQueries = 0
-                        memberEmails.forEach { email ->
-                            db.collection("users")
-                                .document(email)
-                                .get()
-                                .addOnSuccessListener { userDoc ->
-                                    if (userDoc.exists() &&
-                                        !membersList.any { it.memberId == email }) {
-                                        val member = MemberResponse(
-                                            memberId = userDoc.id,
-                                            profileImgURL = userDoc.getString("profile") ?: "",
-                                            memberName = userDoc.getString("nickname") ?: ""
-                                        )
-                                        membersList.add(member)
-                                    }
-
-                                    // 최종 결과를 MemberItem으로 변환하여 설정
-                                    completedQueries++
-                                    if (completedQueries == memberEmails.size) {
-                                        val memberItems = membersList.map { member ->
-                                            MemberItem(
-                                                memberId = member.memberId,
-                                                profileImgURL = member.profileImgURL,
-                                                memberName = member.memberName,
-                                                isEdit = false,
-                                                isCreator = member.memberId == creatorEmail,
-                                                isCurrentUser = member.memberId == currentUserEmail
-                                            )
-                                        }   // 정렬 로직 추가
-                                            .sortedWith(compareBy<MemberItem> { !it.isCreator }  // 그룹장을 맨 앞으로
-                                            .thenBy { it.memberName })  // 그 다음 이름순
-
-                                        memberList.value = memberItems
-                                    }
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.e("MemberViewModel", "사용자 정보 조회 실패: $email", e)
-                                    completedQueries++
-                                }
-                        }
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("MemberViewModel", "멤버 서브컬렉션 조회 실패", e)
-                    }
+                }
             }
-            .addOnFailureListener { e ->
-                Log.e("MemberViewModel", "그룹 정보 조회 실패", e)
-            }
-
     }
 
     fun deleteMember(groupId: String, position: Int) {
@@ -123,43 +96,31 @@ class MemberViewModel: ViewModel() {
             return
         }
 
-        // memberEmails 배열에서 멤버 제거
+        // memberUIDs 배열과 members 컬렉션 모두 업데이트
         db.collection("groups")
             .document(groupId)
             .get()
             .addOnSuccessListener { groupDoc ->
-                val memberEmails = groupDoc.get("memberEmails") as? MutableList<String> ?: mutableListOf()
-                memberEmails.remove(memberToDelete.memberId)
+                val memberUIDs = groupDoc.get("memberUIDs") as? MutableList<String> ?: mutableListOf()
+                memberUIDs.remove(memberToDelete.memberId)
 
-                // memberEmails 업데이트
-                db.collection("groups")
-                    .document(groupId)
-                    .update("memberEmails", memberEmails)
+                // 트랜잭션으로 두 작업 동시 처리
+                db.runTransaction { transaction ->
+                    // memberUIDs 업데이트
+                    transaction.update(db.collection("groups").document(groupId), "memberUIDs", memberUIDs)
+
+                    // members 컬렉션에서도 삭제
+                    transaction.delete(db.collection("groups").document(groupId)
+                        .collection("members").document(memberToDelete.memberId))
+                }
                     .addOnSuccessListener {
-                        // members 서브컬렉션에서도 제거
-                        db.collection("groups")
-                            .document(groupId)
-                            .collection("members")
-                            .document(memberToDelete.memberId)
-                            .delete()
-                            .addOnSuccessListener {
-                                _deleteResult.value = true
-                                fetchMembers(groupId)  // 목록 새로고침
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("MemberViewModel", "멤버 서브컬렉션 삭제 실패", e)
-                                _deleteResult.value = false
-                            }
-                    }
+                        _deleteResult.value = true
+                        fetchMembers(groupId)
+                }
                     .addOnFailureListener { e ->
-                        Log.e("MemberViewModel", "memberEmails 업데이트 실패", e)
+                        Log.e("MemberViewModel", "멤버 삭제 실패", e)
                         _deleteResult.value = false
-                    }
-            }
-            .addOnFailureListener { e ->
-                Log.e("MemberViewModel", "그룹 정보 조회 실패", e)
-                _deleteResult.value = false
+                }
             }
     }
-
 }
