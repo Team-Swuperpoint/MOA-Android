@@ -198,6 +198,8 @@ class HomeViewModel : ViewModel() {
                     val doc = documents.documents[0]
                     fetchMemberProfiles(groupId) { profileList ->
                         val dateStr = doc.getString("date") ?: ""
+                        val startTimeStr = doc.getString("gatheringStartTime") ?: "00:00"  // time 대신 gatheringStartTime 사용
+
                         val dDayValue = if (dateStr.isNotEmpty()) {
                             val gatheringDate = LocalDate.parse(dateStr)
                             ChronoUnit.DAYS.between(LocalDate.now(), gatheringDate).toInt()
@@ -208,10 +210,7 @@ class HomeViewModel : ViewModel() {
                             groupId = groupId,
                             groupName = groupName,
                             gatheringName = doc.getString("gatheringName") ?: "",
-                            date = formatDate(
-                                doc.getString("date") ?: "",
-                                doc.getString("time") ?: "00:00"
-                            ),
+                            date = formatDate(dateStr, startTimeStr),  // gatheringStartTime 전달
                             location = doc.getString("location") ?: "",
                             dDay = dDayValue,
                             memberProfileList = profileList
