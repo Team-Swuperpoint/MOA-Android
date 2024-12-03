@@ -60,6 +60,7 @@ class HomeViewModel : ViewModel() {
             val gathering = response.groupInfo?.let {
                 HomeGatheringItem(
                     gatheringId = it.gatheringId,
+                    groupId = it.groupId,
                     groupName = it.groupName,
                     gatheringName = it.gatheringName,
                     date = it.date,
@@ -204,11 +205,12 @@ class HomeViewModel : ViewModel() {
 
                         val gathering = HomeGatheringItem(
                             gatheringId = doc.id,
+                            groupId = groupId,
                             groupName = groupName,
                             gatheringName = doc.getString("gatheringName") ?: "",
                             date = formatDate(
                                 doc.getString("date") ?: "",
-                                doc.getString("time") ?: "00:00"  // time 필드 가져오기
+                                doc.getString("time") ?: "00:00"
                             ),
                             location = doc.getString("location") ?: "",
                             dDay = dDayValue,

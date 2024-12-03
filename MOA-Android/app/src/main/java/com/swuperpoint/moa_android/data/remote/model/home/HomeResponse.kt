@@ -21,6 +21,7 @@ data class HomeGroupListResponse(
 /* 가장 가까운 1개 모임 정보 */
 data class HomeGroupInfoResponse(
     val gatheringId: String, // 모임 ID
+    val groupId: String, // 그룹 ID 추가
     val groupName: String, // 그룹 이름
     val gatheringName: String, // 모임 이름
     val date: String, // 모임 날짜
