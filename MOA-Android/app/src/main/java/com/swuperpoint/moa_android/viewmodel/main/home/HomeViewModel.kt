@@ -64,7 +64,7 @@ class HomeViewModel : ViewModel() {
                     groupName = it.groupName,
                     gatheringName = it.gatheringName,
                     date = it.date,
-                    location = it.location,
+                    placeName = it.placeName,
                     dDay = it.dDay,
                     memberProfileList = it.memberProfileList
                 )
@@ -200,6 +200,10 @@ class HomeViewModel : ViewModel() {
                         val dateStr = doc.getString("date") ?: ""
                         val startTimeStr = doc.getString("gatheringStartTime") ?: "00:00"  // time 대신 gatheringStartTime 사용
 
+                        // gatheringPlace 객체에서 placeName 가져오기
+                        val gatheringPlace = doc.get("gatheringPlace") as? Map<String, Any>
+                        val placeName = (gatheringPlace?.get("placeName") as? String ?: "") + "역"
+
                         val dDayValue = if (dateStr.isNotEmpty()) {
                             val gatheringDate = LocalDate.parse(dateStr)
                             ChronoUnit.DAYS.between(LocalDate.now(), gatheringDate).toInt()
@@ -211,7 +215,7 @@ class HomeViewModel : ViewModel() {
                             groupName = groupName,
                             gatheringName = doc.getString("gatheringName") ?: "",
                             date = formatDate(dateStr, startTimeStr),  // gatheringStartTime 전달
-                            location = doc.getString("location") ?: "",
+                            placeName = placeName,  // location 대신 placeName 사용
                             dDay = dDayValue,
                             memberProfileList = profileList
                         )

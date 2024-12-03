@@ -7,7 +7,7 @@ data class HomeGatheringItem(
     val groupName: String, // 그룹 이름
     val gatheringName: String, // 모임 이름
     val date: String, // 모임 날짜
-    val location: String, // 모임 장소
+    val placeName: String, // 모임 장소(location -> placeName으로 변경)
     val dDay: Int, // 모임 D-Day
     val memberProfileList: ArrayList<String> // 모임원 프로필 사진
 )

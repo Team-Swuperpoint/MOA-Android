@@ -100,7 +100,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             binding.tvHomeGroupName.text = gatheringInfo.groupName
             binding.tvHomeGatheringName.text = gatheringInfo.gatheringName
             binding.tvHomeTime.text = gatheringInfo.date
-            binding.tvHomeLocation.text = gatheringInfo.location
+            binding.tvHomeLocation.text = gatheringInfo.placeName
             binding.tvHomeDday.text = gatheringInfo.dDay.toString()
         }
 
