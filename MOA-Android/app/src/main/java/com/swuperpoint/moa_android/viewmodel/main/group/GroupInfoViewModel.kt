@@ -122,24 +122,79 @@ class GroupInfoViewModel: ViewModel() {
     }
 
     private fun fetchGroupMembers(groupId: String, callback: (ArrayList<MemberResponse>) -> Unit) {
+        val memberList = ArrayList<MemberResponse>()
+
+        // groups 컬렉션에서 해당 그룹 문서 가져오기
         db.collection("groups")
             .document(groupId)
-            .collection("members")
             .get()
-            .addOnSuccessListener { querySnapshot ->
-                val memberList = ArrayList<MemberResponse>()
-                for (document in querySnapshot.documents) {
-                    val member = MemberResponse(
-                        memberId = document.id,
-                        profileImgURL = document.getString("profile") ?: "",
-                        memberName = document.getString("nickname") ?: ""
-                    )
-                    memberList.add(member)
+            .addOnSuccessListener { groupDoc ->
+                // 그룹 문서에서 memberEmails 배열 가져오기(그룹장 포함)
+                val memberEmails = groupDoc.get("memberEmails") as? List<String> ?: listOf()
+                var completedQueries = 0
+
+                if (memberEmails.isEmpty()) {
+                    // memberEmails가 비어있으면 빈 리스트 반환
+                    callback(memberList)
+                    return@addOnSuccessListener
                 }
-                callback(memberList)
+
+                // memberEmails의 각 이메일에 대해 users 컬렉션에서 상세 정보 조회
+                memberEmails.forEach { email ->
+                    db.collection("users")
+                        .document(email)
+                        .get()
+                        .addOnSuccessListener { userDoc ->
+                            if (userDoc.exists()) {
+                                // users 컬렉션에서 가져온 사용자 정보로 MemberResponse 객체 생성
+                                val member = MemberResponse(
+                                    memberId = userDoc.id, // 이메일을 id로 사용
+                                    profileImgURL = userDoc.getString("profile") ?: "",
+                                    memberName = userDoc.getString("nickname") ?: ""
+                                )
+                                memberList.add(member)
+                            }
+
+                            completedQueries++
+                            // 모든 memberEmails 처리가 완료되면 members 서브컬렉션 조회 시작
+                            if (completedQueries == memberEmails.size) {
+                                // 그룹의 members 서브컬렉션 조회 (추가된 멤버들)
+                                db.collection("groups")
+                                    .document(groupId)
+                                    .collection("members")
+                                    .get()
+                                    .addOnSuccessListener { querySnapshot ->
+                                        for (document in querySnapshot.documents) {
+                                            // memberEmails에 없는 멤버만 추가(중복 방지)
+                                            if (!memberList.any { it.memberId == document.id }) {
+                                                val member = MemberResponse(
+                                                    memberId = document.id,
+                                                    profileImgURL = document.getString("profile") ?: "",
+                                                    memberName = document.getString("nickname") ?: ""
+                                                )
+                                                memberList.add(member)
+                                            }
+                                        }
+                                        // 최종 리스트 콜백
+                                        callback(memberList)
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e("GroupInfoViewModel", "그룹원 목록 조회 실패", e)
+                                        callback(memberList)  // members 컬렉션 조회 실패시 memberEmails만 반환
+                                    }
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("GroupInfoViewModel", "사용자 정보 조회 실패: ${email}", e)
+                            completedQueries++
+                            if (completedQueries == memberEmails.size) {
+                                callback(memberList)
+                            }
+                        }
+                }
             }
             .addOnFailureListener { e ->
-                Log.e("GroupInfoViewModel", "Error fetching members", e)
+                Log.e("GroupInfoViewModel", "그룹 정보 조회 실패", e)
                 callback(ArrayList())
             }
     }
