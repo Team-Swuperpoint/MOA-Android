@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -18,6 +19,7 @@ import java.time.temporal.ChronoUnit
 /* 그룹 화면 뷰 모델 */
 class GroupViewModel: ViewModel() {
     private val db = Firebase.firestore
+    private val auth = Firebase.auth  // Firebase Auth 인스턴스 추가
     private val _groupResponse = MutableLiveData<ArrayList<GroupResponse>>() // 내부 수정용 변수
     val groupResponse: LiveData<ArrayList<GroupResponse>> get() = _groupResponse // 외부 읽기 전용 변수
 
@@ -47,7 +49,11 @@ class GroupViewModel: ViewModel() {
     }
 
     private fun setupGroupsListener() {
+        // 현재 로그인한 사용자의 이메일 가져오기
+        val currentUserEmail = auth.currentUser?.email ?: return
+
         groupsListener = db.collection("groups")
+            .whereArrayContains("memberEmails", currentUserEmail)  // 현재 사용자가 멤버로 속해있는 그룹만 필터링
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {
@@ -58,6 +64,12 @@ class GroupViewModel: ViewModel() {
                 if (snapshot != null) {
                     val deferredGroups = ArrayList<Triple<DocumentSnapshot, String, Int>>() // memberCount 추가
                     var processedGroups = 0
+
+                    if (snapshot.documents.isEmpty()) {
+                        // 속한 그룹이 없는 경우 빈 리스트로 업데이트
+                        _groupResponse.postValue(ArrayList())
+                        return@addSnapshotListener
+                    }
 
                     for (document in snapshot.documents) {
                         try {
