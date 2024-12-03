@@ -176,7 +176,16 @@ class GroupInfoViewModel: ViewModel() {
                                             }
                                         }
                                         // 최종 리스트 콜백
-                                        callback(memberList)
+                                        // callback(memberList)
+
+                                        // creatorEmail 가져오기
+                                        val creatorEmail = groupDoc.getString("createdBy") ?: memberEmails.firstOrNull()
+                                        // 그룹장이 맨 위로 오도록 정렬한 뒤 콜백
+                                        val sortedList = ArrayList(memberList.sortedWith(
+                                            compareBy<MemberResponse> { it.memberId != creatorEmail }
+                                                .thenBy { it.memberName }  // 이름순
+                                        ))
+                                        callback(sortedList)
                                     }
                                     .addOnFailureListener { e ->
                                         Log.e("GroupInfoViewModel", "그룹원 목록 조회 실패", e)
