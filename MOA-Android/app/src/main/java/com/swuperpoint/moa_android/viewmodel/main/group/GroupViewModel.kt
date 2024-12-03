@@ -62,6 +62,7 @@ class GroupViewModel: ViewModel() {
                 }
 
                 if (snapshot != null) {
+                    Log.d("GroupViewModel", "그룹 목록 조회: ${snapshot.documents.size}개")
                     val deferredGroups = ArrayList<Triple<DocumentSnapshot, String, Int>>()
                     var processedGroups = 0
 

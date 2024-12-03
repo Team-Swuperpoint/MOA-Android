@@ -36,8 +36,7 @@ class GroupRVAdapter(private var groupList: ArrayList<GroupItem>?): RecyclerView
     // 아이템 업데이트
     @SuppressLint("NotifyDataSetChanged")
     fun updateItems(newItems: ArrayList<GroupItem>?) {
-        groupList?.clear()
-        groupList = newItems
+        groupList = ArrayList(newItems ?: arrayListOf())
         notifyDataSetChanged()
     }
 }
