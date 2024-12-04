@@ -58,15 +58,17 @@
                     android:src="@drawable/ic_place_16"
                     app:tint="@color/gray_600"
                     android:layout_gravity="center"/>
+
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_item_timeline_info_place"
                     style="@style/Ongothic_Body2"
-                    android:text="@{data.placeName}"
-                    android:textColor="@color/gray_600"
-                    tools:text="북촌"
+                    android:layout_width="wrap_content"
+                    android:layout_height="19dp"
+                    android:layout_gravity="center"
                     android:layout_marginStart="2dp"
-                    android:layout_gravity="center"/>
+                    android:textColor="@color/gray_600"
+                    tools:text="북촌" />
+
             </LinearLayout>
         </LinearLayout>
 
