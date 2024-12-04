@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 타임라인 만들기화면의 이미지 리스트 -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="12dp">
+
+    <!-- 추가된 사진 -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_item_create_timeline_photo"
+        android:layout_width="104dp"
+        android:layout_height="104dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_item_create_timeline_photo"
+            android:layout_width="104dp"
+            android:layout_height="104dp"
+            android:scaleType="centerCrop"/>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 삭제 버튼 -->
+    <ImageView
+        android:id="@+id/iv_item_create_timeline_photo_delete"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_cancel_24"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintTop_toTopOf="@id/cv_item_create_timeline_photo"
+        app:layout_constraintEnd_toEndOf="@id/cv_item_create_timeline_photo"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
