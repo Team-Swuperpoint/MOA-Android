@@ -105,7 +105,7 @@ class GatheringInfoFragment : BaseFragment<FragmentGatheringInfoBinding>(Fragmen
                 // 아이콘 스타일 생성 (리사이즈된 비트맵 사용)
                 val markerStyle = LabelStyle.from(resizedBitmap)
                     .setZoomLevel(1)
-                    .setAnchorPoint(0f, 1.2f)
+                    .setAnchorPoint(0.5f, 0.5f)
 
                 // 아이콘 라벨 추가
                 layer?.addLabel(

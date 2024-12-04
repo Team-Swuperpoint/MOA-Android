@@ -24,9 +24,8 @@ class GroupFragment : BaseFragment<FragmentGroupBinding>(FragmentGroupBinding::i
     }
 
     override fun initAfterBinding() {
-        // 어댑터 연결
-        groupAdapter = GroupRVAdapter(groupViewModel.groupList.value)
-        binding.rvGroupGroup.adapter = groupAdapter
+        groupAdapter = GroupRVAdapter(ArrayList()) // 빈 리스트로 초기화
+        binding.rvGroupGroup.adapter = groupAdapter // 어댑터 연결
 
         // 업데이트 관찰
         observe(groupAdapter)
@@ -57,7 +56,6 @@ class GroupFragment : BaseFragment<FragmentGroupBinding>(FragmentGroupBinding::i
 
     // VM 업데이트 관찰
     private fun observe(adapter: GroupRVAdapter) {
-        // 그룹 리스트 업데이트 관찰
         groupViewModel.groupList.observe(viewLifecycleOwner) { items ->
             Log.d("GroupFragment", "Received ${items?.size ?: 0} items")
             if (items != null) { // null 체크 추가

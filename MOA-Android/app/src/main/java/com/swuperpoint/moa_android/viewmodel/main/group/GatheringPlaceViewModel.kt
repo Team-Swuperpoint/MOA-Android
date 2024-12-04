@@ -1,24 +1,15 @@
 package com.swuperpoint.moa_android.viewmodel.main.group
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import android.content.Context
 import android.util.Log
-import com.swuperpoint.moa_android.data.remote.model.group.GatheringPlaceResponse
-import com.swuperpoint.moa_android.data.remote.model.group.MemberResponse
-import com.swuperpoint.moa_android.data.remote.model.group.PlaceLocationResponse
-import com.swuperpoint.moa_android.data.remote.model.group.RecommendPlaceResponse
-import com.swuperpoint.moa_android.view.main.group.data.AddressItem
-import com.swuperpoint.moa_android.view.main.group.data.MemberItem
-import com.swuperpoint.moa_android.util.Coordinate
-import com.swuperpoint.moa_android.util.MidpointCalculator
+import com.swuperpoint.moa_android.data.remote.model.group.*
+import com.swuperpoint.moa_android.view.main.group.data.*
+import com.swuperpoint.moa_android.util.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class GatheringPlaceViewModel : ViewModel() {
     private val db = Firebase.firestore
@@ -27,13 +18,14 @@ class GatheringPlaceViewModel : ViewModel() {
     private val _response = MutableLiveData<GatheringPlaceResponse>()
     val response: LiveData<GatheringPlaceResponse> get() = _response
 
-    // 로딩 상태
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    // 에러 메시지
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
+
+    private val _isButtonEnabled = MutableLiveData<Boolean>()
+    val isButtonEnabled: LiveData<Boolean> = _isButtonEnabled
 
     var memberList: LiveData<List<MemberItem>> = _response.map { response ->
         response.memberList.map { member ->
@@ -44,6 +36,12 @@ class GatheringPlaceViewModel : ViewModel() {
                 isEdit = false
             )
         }
+    }
+
+    private var groupId: String = ""
+
+    fun setGroupId(id: String) {
+        groupId = id
     }
 
     var memberNum: LiveData<Int> = _response.map { it.memberNum }
@@ -66,193 +64,286 @@ class GatheringPlaceViewModel : ViewModel() {
         midpointCalculator = MidpointCalculator(context)
     }
 
-    fun fetchGatheringPlace(gatheringId: String) {
-        _isLoading.value = true
-
-        db.collection("groups")
-            .get()
-            .addOnSuccessListener { groupsSnapshot ->
-                for (groupDoc in groupsSnapshot.documents) {
-                    groupDoc.reference.collection("gatherings")
-                        .document(gatheringId)
-                        .get()
-                        .addOnSuccessListener { gatheringDoc ->
-                            if (gatheringDoc.exists()) {
-                                @Suppress("UNCHECKED_CAST")
-                                val memberPlaces = gatheringDoc.get("memberPlaces") as? List<Map<String, Any>>
-
-                                // memberPlaces에서 coordinates 리스트 생성
-                                val coordinates = mutableListOf<Coordinate>()
-
-                                // 현재 사용자의 좌표 추가
-                                _addressItem.value?.let { address ->
-                                    coordinates.add(Coordinate(
-                                        lat = address.latitude.toString(),
-                                        lon = address.longitude.toString()
-                                    ))
-                                }
-
-                                // memberPlaces의 좌표들 추가
-                                memberPlaces?.forEach { place ->
-                                    val lat = (place["latitude"] as? Number)?.toString()
-                                    val lng = (place["longitude"] as? Number)?.toString()
-                                    if (lat != null && lng != null) {
-                                        coordinates.add(Coordinate(lat = lat, lon = lng))
-                                    }
-                                }
-
-                                if (coordinates.size < 2) {
-                                    _error.value = "최소 2개 이상의 위치가 필요합니다"
-                                    _isLoading.value = false
-                                    return@addOnSuccessListener
-                                }
-
-                                // 중간 지점 계산
-                                viewModelScope.launch {
-                                    val midpoint = midpointCalculator.findBestStation(coordinates)
-                                    if (midpoint != null) {
-                                        // ... 결과 처리 ...
-                                    } else {
-                                        _error.value = "중간 지점을 찾을 수 없습니다"
-                                    }
-                                    _isLoading.value = false
-                                }
-                            }
-                        }
-                }
-            }
+    fun updateAddressItem(newAddress: AddressItem?, groupId: String, gatheringId: String, userId: String) {
+        _addressItem.value = newAddress
+        newAddress?.let {
+            saveUserLocation(groupId, gatheringId, userId, it)
+        }
     }
 
-    private fun calculateMidpoint(
-        members: ArrayList<MemberResponse>,
-        memberNum: Int,
-        userPlaceName: String?,
-        startPlace: PlaceLocationResponse?,
-        gatheringId: String
-    ) {
+    // 멤버 위치 입력 상태 체크 로직 개선
+    private fun checkButtonState(memberPlaces: List<Map<String, Any>>) {
+        _isButtonEnabled.value = false  // 초기값 false
+
+        if (memberPlaces.size == 2) {
+            val allMembersHaveLocation = memberPlaces.all {
+                it["latitude"] != null && it["longitude"] != null
+            }
+            // 에러 메시지 조건 수정
+            if (!allMembersHaveLocation) {
+                _error.value = "모든 멤버의 위치 입력이 필요합니다 (${memberPlaces.size}/2)"
+            }
+            _isButtonEnabled.value = allMembersHaveLocation
+        }
+    }
+    private val _progressCount = MutableLiveData<String>()
+    val progressCount: LiveData<String> = _progressCount
+
+    private fun updateProgress(memberPlaces: List<Map<String, Any>>, totalMembers: Int) {
+        _progressCount.value = "${memberPlaces.size}/$totalMembers"
+    }
+
+    // ViewModel
+    private fun fetchGatheringDocument(groupId: String, gatheringId: String) {
         viewModelScope.launch {
             try {
-                val coordinates = mutableListOf<Coordinate>()
+                val gatheringDoc = db.collection("groups")
+                    .document(groupId)
+                    .collection("gatherings")
+                    .document(gatheringId)
+                    .get()
+                    .await()
 
-                // 현재 사용자의 좌표 추가
-                _addressItem.value?.let { address ->
-                    coordinates.add(Coordinate(
-                        lat = address.latitude.toString(),
-                        lon = address.longitude.toString()
-                    ))
-                } ?: startPlace?.let { place ->
-                    coordinates.add(Coordinate(
-                        lat = place.latitude,
-                        lon = place.longitude
-                    ))
-                }
+                Log.d("GatheringPlace", "Doc data: ${gatheringDoc.data}")
+                val memberUIDs = gatheringDoc.get("memberUIDs") as? List<String> ?: listOf()
+                Log.d("GatheringPlace", "memberUIDs: $memberUIDs")
+                val memberPlaces = gatheringDoc.get("memberPlaces") as? List<Map<String, Any>> ?: listOf()
+                Log.d("GatheringPlace", "memberPlaces: $memberPlaces")
 
-                if (coordinates.isEmpty()) {
-                    _error.value = "출발 장소를 입력해주세요"
-                    _isLoading.value = false
-                    return@launch
-                }
+                val groupDoc = db.collection("groups").document(groupId).get().await()
+                val totalMembers = groupDoc.getLong("groupMemberNum") ?: 0
 
-                val bestStation = midpointCalculator.findBestStation(coordinates)
-                if (bestStation != null) {
-                    val recommendedPlaces = ArrayList<RecommendPlaceResponse>().apply {
-                        add(RecommendPlaceResponse(
-                            placeName = bestStation.station,
-                            address = "${bestStation.line} ${bestStation.station}역",
-                            subwayTime = "${bestStation.maxTime}분 소요",
-                            latitude = bestStation.coordinates.lat,
-                            longitude = bestStation.coordinates.lon
-                        ))
-                    }
-
-                    _response.postValue(
-                        GatheringPlaceResponse(
-                            memberList = members,
-                            memberNum = memberNum,
-                            userPlaceName = _addressItem.value?.title ?: userPlaceName,
-                            startPlace = _addressItem.value?.let {
-                                PlaceLocationResponse(
-                                    it.latitude.toString(),
-                                    it.longitude.toString()
-                                )
-                            } ?: startPlace,
-                            placeList = recommendedPlaces
-                        )
-                    )
-                } else {
-                    _error.value = "중간 지점을 찾을 수 없습니다"
-                }
-            } catch (e: Exception) {
-                _error.value = "중간 지점 계산에 실패했습니다"
-                Log.e("GatheringPlaceViewModel", "Error calculating midpoint", e)
-            } finally {
-                _isLoading.value = false
+                _progressCount.value = "${memberPlaces?.size}/$totalMembers"
+                _isButtonEnabled.value = memberPlaces.size == memberUIDs.size && memberUIDs.size >= 2
+            } catch(e: Exception) {
+                _error.value = "모임 정보를 가져오는 데 실패했습니다"
             }
         }
     }
 
-    fun updateAddressItem(newAddress: AddressItem?) {
-        _addressItem.value = newAddress
+    fun fetchGatheringPlace(groupId: String, gatheringId: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                // 먼저 groups 컬렉션에서 memberUIDs 수를 가져옴
+                val groupDoc = db.collection("groups")
+                    .document(groupId)
+                    .get()
+                    .await()
+
+                val totalMembers = (groupDoc.get("memberUIDs") as? List<String>)?.size ?: 0
+
+                // 그 다음 gathering 문서의 memberPlaces를 가져옴
+                val gatheringDoc = db.collection("groups")
+                    .document(groupId)
+                    .collection("gatherings")
+                    .document(gatheringId)
+                    .get()
+                    .await()
+
+                val memberPlaces = gatheringDoc.get("memberPlaces") as? List<Map<String, Any>> ?: listOf()
+
+                _progressCount.value = "${memberPlaces.size}/$totalMembers"
+                _isButtonEnabled.value = memberPlaces.size == totalMembers && totalMembers >= 2
+
+                if (_isButtonEnabled.value == true) {
+                    calculateMidpoint(memberPlaces)
+                }
+            } catch(e: Exception) {
+                _error.value = "모임 정보를 가져오는 데 실패했습니다"
+            }
+        }
     }
 
-    fun saveSelectedPlace(gatheringId: String, place: Map<String, Any>, callback: (Boolean) -> Unit) {
-        db.collection("groups")
-            .get()
-            .addOnSuccessListener { groupsSnapshot ->
-                for (groupDoc in groupsSnapshot.documents) {
-                    groupDoc.reference.collection("gatherings")
-                        .document(gatheringId)
-                        .update("place", place)
-                        .addOnSuccessListener {
-                            callback(true)
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("GatheringPlaceViewModel", "Error saving place", e)
-                            _error.value = "중간 지점 저장에 실패했습니다"
-                            callback(false)
-                        }
+    // 계산 중 메시지를 위한 LiveData
+    private val _calculatingMessage = MutableLiveData<String?>()
+    val calculatingMessage: LiveData<String?> = _calculatingMessage
+
+
+    private suspend fun calculateMidpoint(memberPlaces: List<Map<String, Any>>) {
+        try {
+            _calculatingMessage.postValue("중간 지점 계산 중...")
+
+            val coordinates = mutableListOf<Coordinate>()
+            memberPlaces.forEach { place ->
+                val lat = (place["latitude"] as? Number)?.toString()
+                val lng = (place["longitude"] as? Number)?.toString()
+                if (lat != null && lng != null) {
+                    coordinates.add(Coordinate(lat = lat, lon = lng))
                 }
             }
-            .addOnFailureListener { e ->
-                Log.e("GatheringPlaceViewModel", "Error fetching groups", e)
-                _error.value = "중간 지점 저장에 실패했습니다"
-                callback(false)
+
+
+            val stations = midpointCalculator.findBestStation(coordinates)
+            if (stations.isNotEmpty()) {
+                val recommendedPlaces = ArrayList<RecommendPlaceResponse>().apply {
+                    stations.forEach { station ->
+                        add(RecommendPlaceResponse(
+                            placeName = station.station,
+                            address = "${station.line} ${station.station}역",
+                            subwayTime = "${station.maxTime}분",
+                            latitude = station.coordinates.lat,
+                            longitude = station.coordinates.lon
+                        ))
+                    }
+                }
+
+
+                val memberList = fetchUserDetails(memberPlaces)
+                _response.postValue(
+                    GatheringPlaceResponse(
+                        memberList = memberList,
+                        memberNum = memberPlaces.size,
+                        userPlaceName = _addressItem.value?.title,
+                        startPlace = _addressItem.value?.let {
+                            PlaceLocationResponse(
+                                it.latitude.toString(),
+                                it.longitude.toString()
+                            )
+                        },
+                        placeList = recommendedPlaces
+                    )
+                )
+            } else {
+                _error.value = "중간 지점을 찾을 수 없습니다"
             }
+        } catch (e: Exception) {
+            _error.value = "중간 지점 계산에 실패했습니다: ${e.message}"
+            Log.e("GatheringPlaceViewModel", "중간 지점 계산 중 오류 발생", e)
+        } finally {
+            _calculatingMessage.postValue(null)  // 계산 완료되면 메시지 제거
+        }
     }
 
-    fun addTestMemberPlaces(groupId: String, gatheringId: String) {
+    fun findHotplaceStation(coordinates: List<Coordinate>) {
         _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                _calculatingMessage.value = "핫플레이스 찾는 중..."
+                val stations = midpointCalculator.findHotplaceStation(coordinates)
+                if (stations.isNotEmpty()) {
+                    val recommendedPlaces = ArrayList<RecommendPlaceResponse>().apply {
+                        stations.forEach { station ->
+                            add(RecommendPlaceResponse(
+                                placeName = station.station,
+                                address = "${station.line} ${station.station}역",
+                                subwayTime = "${station.maxTime}분",
+                                latitude = station.coordinates.lat,
+                                longitude = station.coordinates.lon
+                            ))
+                        }
+                    }
 
-        val memberPlaces = arrayListOf(
-            hashMapOf(
-                "userId" to "test_user_1",
-                "latitude" to 37.5665,
-                "longitude" to 126.9780,
-                "name" to "서울역"
-            ),
-            hashMapOf(
-                "userId" to "test_user_2",
-                "latitude" to 37.5209,
-                "longitude" to 127.1232,
-                "name" to "잠실역"
-            )
+                    // 기존 response 객체를 사용하여 UI 업데이트
+                    _response.value = _response.value?.copy(
+                        placeList = recommendedPlaces
+                    )
+                } else {
+                    _error.value = "주변에 핫플레이스를 찾을 수 없습니다"
+                }
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _calculatingMessage.value = null  // 계산 완료되면 메시지 제거
+            }
+        }
+    }
+
+    // saveSelectedPlace 추가
+    fun saveSelectedPlace(gatheringId: String, place: RecommendPlaceResponse, callback: (Boolean) -> Unit) {
+        val placeMap = hashMapOf(
+            "latitude" to place.latitude.toDouble(),
+            "longitude" to place.longitude.toDouble(),
+            "placeName" to place.placeName,
+            "address" to place.address,
+            "subwayTime" to place.subwayTime
         )
 
         db.collection("groups")
             .document(groupId)
             .collection("gatherings")
             .document(gatheringId)
-            .update("memberPlaces", memberPlaces)
-            .addOnSuccessListener {
-                _isLoading.value = false
-                _error.value = "테스트 데이터가 추가되었습니다"
-            }
+            .update("gatheringPlace", placeMap)
+            .addOnSuccessListener { callback(true) }
             .addOnFailureListener { e ->
-                _isLoading.value = false
-                _error.value = "테스트 데이터 추가 실패: ${e.message}"
-                Log.e("GatheringPlaceViewModel", "Error adding test data", e)
+                _error.value = "중간 지점 저장에 실패했습니다"
+                callback(false)
             }
     }
 
+    fun saveUserLocation(groupId: String, gatheringId: String, userId: String, location: AddressItem) {
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener { userDoc ->
+                val nickname = userDoc.getString("nickname") ?: "Unknown"
+                val profileUrl = userDoc.getString("profile") ?: ""
 
+                val memberPlace = hashMapOf(
+                    "userId" to userId,
+                    "latitude" to location.latitude.toDouble(),
+                    "longitude" to location.longitude.toDouble(),
+                    "name" to location.title,
+                    "nickname" to nickname,
+                    "profileUrl" to profileUrl
+                ) as Map<String, Any>
+
+                updateGatheringWithLocation(groupId, gatheringId, userId, memberPlace)
+            }
+            .addOnFailureListener { e ->
+                _error.value = "사용자 정보를 가져오는데 실패했습니다"
+                Log.e("GatheringPlaceViewModel", "사용자 정보 조회 실패", e)
+            }
+    }
+
+    private fun updateGatheringWithLocation(groupId: String, gatheringId: String, userId: String, memberPlace: Map<String, Any>) {
+        db.collection("groups")
+            .document(groupId)
+            .collection("gatherings")
+            .document(gatheringId)
+            .get()
+            .addOnSuccessListener { gatheringDoc ->
+                val currentPlaces = gatheringDoc.get("memberPlaces") as? MutableList<Map<String, Any>> ?: mutableListOf()
+
+                val existingIndex = currentPlaces.indexOfFirst { it["userId"] == userId }
+                if (existingIndex != -1) {
+                    currentPlaces[existingIndex] = memberPlace
+                } else {
+                    currentPlaces.add(memberPlace)
+                }
+
+                checkButtonState(currentPlaces)
+
+                gatheringDoc.reference.update("memberPlaces", currentPlaces)
+                    .addOnSuccessListener {
+                        fetchGatheringPlace(groupId, gatheringId)
+                    }
+                    .addOnFailureListener { e ->
+                        _error.value = "위치 저장에 실패했습니다"
+                        Log.e("GatheringPlaceViewModel", "위치 저장 실패", e)
+                    }
+            }
+    }
+
+    suspend fun fetchUserDetails(memberPlaces: List<Map<String, Any>>): ArrayList<MemberResponse> {
+        val memberList = ArrayList<MemberResponse>()
+
+        memberPlaces.forEach { place ->
+            try {
+                val userId = place["userId"].toString()
+                val userDoc = db.collection("users")
+                    .document(userId)
+                    .get()
+                    .await()
+
+                val member = MemberResponse(
+                    memberId = userId,
+                    profileImgURL = userDoc.getString("profile") ?: "",
+                    memberName = userDoc.getString("nickname") ?: "Unknown"
+                )
+                memberList.add(member)
+            } catch (e: Exception) {
+                Log.e("GatheringPlaceViewModel", "Error fetching user details", e)
+            }
+        }
+        return memberList
+    }
 }
