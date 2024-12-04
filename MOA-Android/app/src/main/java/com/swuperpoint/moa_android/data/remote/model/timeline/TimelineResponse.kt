@@ -12,5 +12,6 @@ data class TimelineResponse(
     val gatheringName: String, // 모임 이름
     val groupMemberNum: Int, // 그룹 인원 수
     val gatheringImgURL: String, // 모임 대표 사진
-    val createdAt: Timestamp? = null  // 타임라인 생성 시간 추가
+    val createdAt: Timestamp? = null, // 타임라인 생성 시간 추가
+    val createdBy: String  // 생성자 추가
 )
