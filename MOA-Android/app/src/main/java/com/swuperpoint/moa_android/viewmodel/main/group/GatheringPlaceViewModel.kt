@@ -5,6 +5,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import android.content.Context
 import android.util.Log
+import com.google.firebase.auth.ktx.auth
 import com.swuperpoint.moa_android.data.remote.model.group.*
 import com.swuperpoint.moa_android.view.main.group.data.*
 import com.swuperpoint.moa_android.util.*
@@ -125,7 +126,7 @@ class GatheringPlaceViewModel : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                // 먼저 groups 컬렉션에서 memberUIDs 수를 가져옴
+                // 1. groups 컬렉션에서 전체 멤버 수(memberUIDs) 가져오기
                 val groupDoc = db.collection("groups")
                     .document(groupId)
                     .get()
@@ -133,7 +134,7 @@ class GatheringPlaceViewModel : ViewModel() {
 
                 val totalMembers = (groupDoc.get("memberUIDs") as? List<String>)?.size ?: 0
 
-                // 그 다음 gathering 문서의 memberPlaces를 가져옴
+                // 2. gathering 문서에서 memberPlaces 가져오기
                 val gatheringDoc = db.collection("groups")
                     .document(groupId)
                     .collection("gatherings")
@@ -143,14 +144,40 @@ class GatheringPlaceViewModel : ViewModel() {
 
                 val memberPlaces = gatheringDoc.get("memberPlaces") as? List<Map<String, Any>> ?: listOf()
 
+                // 3. 현재 사용자의 위치 정보 찾기
+                val currentUserId = Firebase.auth.currentUser?.uid
+                val userPlace = memberPlaces.find { it["userId"] == currentUserId }
+
+                // 4. Response 업데이트
+                val memberList = fetchUserDetails(memberPlaces)
+                _response.postValue(
+                    GatheringPlaceResponse(
+                        memberList = memberList,
+                        memberNum = memberPlaces.size,
+                        userPlaceName = userPlace?.get("name") as? String,
+                        startPlace = userPlace?.let {
+                            PlaceLocationResponse(
+                                it["latitude"].toString(),
+                                it["longitude"].toString()
+                            )
+                        },
+                        placeList = _response.value?.placeList
+                    )
+                )
+
+                // 5. 진행 상태 업데이트
                 _progressCount.value = "${memberPlaces.size}/$totalMembers"
                 _isButtonEnabled.value = memberPlaces.size == totalMembers && totalMembers >= 2
 
+                // 6. 조건 충족시 중간지점 계산
                 if (_isButtonEnabled.value == true) {
                     calculateMidpoint(memberPlaces)
                 }
+
             } catch(e: Exception) {
                 _error.value = "모임 정보를 가져오는 데 실패했습니다"
+            } finally {
+                _isLoading.value = false
             }
         }
     }
