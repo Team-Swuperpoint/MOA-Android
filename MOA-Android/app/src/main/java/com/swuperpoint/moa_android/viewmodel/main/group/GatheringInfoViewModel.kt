@@ -49,16 +49,26 @@ class GatheringInfoViewModel : ViewModel() {
             .get()
             .addOnSuccessListener { gatheringDoc ->
                 if (gatheringDoc.exists()) {
+                    // 중간 지점 위치 정보 가져오기
+                    val placeMap = gatheringDoc.get("gatheringPlace") as? Map<String, Any>
+
+                    val gatheringPlace = if (placeMap != null) {
+                        PlaceLocationResponse(
+                            latitude = placeMap["latitude"].toString(),
+                            longitude = placeMap["longitude"].toString()
+                        )
+                    } else null
+
                     val gatheringInfo = GatheringInfoResponse(
                         gatheringId = gatheringId,
                         gatheringName = gatheringDoc.getString("gatheringName") ?: "",
                         date = gatheringDoc.getString("date") ?: "",
                         gatheringStartTime = gatheringDoc.getString("gatheringStartTime") ?: "",  // 필드명 수정
                         gatheringEndTime = gatheringDoc.getString("gatheringEndTime") ?: "",      // 필드명 수정
-                        placeName = gatheringDoc.getString("placeName"),
-                        subwayTime = gatheringDoc.getString("subwayTime"),
+                        placeName = placeMap?.get("placeName")?.toString(),
+                        subwayTime = placeMap?.get("subwayTime")?.toString(),
                         startPlace = null,
-                        gatheringPlace = null
+                        gatheringPlace = gatheringPlace
                     )
 
                     Log.d("GatheringInfo", "Document data: ${gatheringDoc.data}")
@@ -75,9 +85,9 @@ class GatheringInfoViewModel : ViewModel() {
     fun calculateMidpoint(startCoordinates: List<Coordinate>) {
         viewModelScope.launch {
             try {
-                val bestStation = midpointCalculator.findBestStation(startCoordinates)
-                if (bestStation != null) {
-                    // 현재의 Response를 복사하고 중간 지점 정보 업데이트
+                val stations = midpointCalculator.findBestStation(startCoordinates)
+                if (stations.isNotEmpty()) {
+                    val bestStation = stations[0] // 첫 번째 역을 기본값으로
                     _response.value = _response.value?.copy(
                         placeName = bestStation.station,
                         subwayTime = "${bestStation.maxTime}분",

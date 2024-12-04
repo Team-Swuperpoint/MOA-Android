@@ -179,19 +179,61 @@
                     android:layout_marginTop="24dp"
                     android:paddingHorizontal="16dp"/>
 
-                <!-- 모임 중간 지점 추천 리스트 -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_gathering_place_recommends"
+<!--                &lt;!&ndash; 모임 중간 지점 추천 리스트 &ndash;&gt;-->
+<!--                <androidx.recyclerview.widget.RecyclerView-->
+<!--                    android:id="@+id/rv_gathering_place_recommends"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:orientation="vertical"-->
+<!--                    android:overScrollMode="never"-->
+<!--                    android:nestedScrollingEnabled="false"-->
+<!--                    android:paddingTop="16dp"-->
+<!--                    android:paddingHorizontal="16dp"-->
+<!--                    tools:listitem="@layout/item_gathering_place"-->
+<!--                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>-->
+
+                <!-- 모임 중간 지점 추천 리스트 영역 -->
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:overScrollMode="never"
-                    android:nestedScrollingEnabled="false"
                     android:paddingTop="16dp"
-                    android:paddingHorizontal="16dp"
-                    tools:listitem="@layout/item_gathering_place"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+                    android:paddingHorizontal="16dp">
 
+                    <!-- 로딩 UI -->
+                    <LinearLayout
+                        android:id="@+id/layout_loading"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:visibility="gone">
+
+                        <ProgressBar
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:indeterminateTint="@color/main_500"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="중간 지점 계산 중..."
+                            style="@style/Pretendard_Body1"
+                            android:textColor="@color/gray_900"
+                            android:layout_marginTop="8dp"/>
+                    </LinearLayout>
+
+                    <!-- 추천 리스트 -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_gathering_place_recommends"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:overScrollMode="never"
+                        android:nestedScrollingEnabled="false"
+                        tools:listitem="@layout/item_gathering_place"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+                </FrameLayout>
                 <!-- 하단 공백 -->
                 <View
                     android:layout_width="match_parent"

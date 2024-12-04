@@ -55,34 +55,6 @@ class NicknameActivity : BaseActivity<ActivityNicknameBinding>(ActivityNicknameB
         // 회원가입 버튼 클릭 이벤트
         binding.btnNicknameSignup.setOnClickListener {
             if (binding.edtNickname.text.toString().isNotEmpty()) {
-
-                // 파이어베이스에 회원가입 데이터 전송
-                val user = hashMapOf(
-                    "email" to naverEmail,
-                    "profile" to naverProfile,
-                    "nickname" to binding.edtNickname.text.toString()
-                )
-
-                db.collection("users")
-                    .document(naverEmail)
-                    .set(user)
-                    .addOnSuccessListener {
-                        Log.d("회원가입 성공!", "${naverEmail} ${naverProfile} ${binding.edtNickname.text}")
-                        // 회원가입 데이터 전송 성공 시 닉네임 저장
-                        saveNickname(binding.edtNickname.text.toString())
-                        // 회원가입 데이터 전송 성공 시 홈 화면으로 이동
-                        showToast("회원가입이 완료되었습니다!")
-                        startActivityWithClear(MainActivity::class.java)
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("회원가입 실패", "Error: ${e.message}")
-                        showToast("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.")
-                    }
-            }
-        }
-
-        binding.btnNicknameSignup.setOnClickListener {
-            if (binding.edtNickname.text.toString().isNotEmpty()) {
                 // 먼저 로그인 시도
                 auth.signInWithEmailAndPassword(naverEmail, generateSecurePassword())
                     .addOnSuccessListener { authResult ->
@@ -93,8 +65,9 @@ class NicknameActivity : BaseActivity<ActivityNicknameBinding>(ActivityNicknameB
                             "nickname" to binding.edtNickname.text.toString()
                         )
 
+                        // UID를 문서 ID로 사용하여 저장
                         db.collection("users")
-                            .document(naverEmail)
+                            .document(authResult.user?.uid ?: "")
                             .set(user)
                             .addOnSuccessListener {
                                 saveNickname(binding.edtNickname.text.toString())
@@ -118,7 +91,7 @@ class NicknameActivity : BaseActivity<ActivityNicknameBinding>(ActivityNicknameB
                                 )
 
                                 db.collection("users")
-                                    .document(naverEmail)
+                                    .document(authResult.user?.uid ?: "")  // 이메일 대신 UID 사용
                                     .set(user)
                                     .addOnSuccessListener {
                                         saveNickname(binding.edtNickname.text.toString())

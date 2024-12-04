@@ -10,7 +10,7 @@ import com.swuperpoint.moa_android.databinding.ItemTimelineBinding
 /* 타임라인 화면의 타임라인 리스트 RV 어댑터 */
 class TimelineRVAdapter: RecyclerView.Adapter<TimelineRVViewHolder>() {
     // 타임라인 리스트
-    private lateinit var timelineList: List<TimelineResponse>
+    private var timelineList: List<TimelineResponse> = emptyList()  // 빈 리스트로 초기화
 
     // 타임라인 선택 클릭 이벤트
     var onClickListener: ((Int) -> Unit)? = null

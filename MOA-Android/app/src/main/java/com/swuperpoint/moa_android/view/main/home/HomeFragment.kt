@@ -3,6 +3,7 @@ package com.swuperpoint.moa_android.view.main.home
 import android.content.Context
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.swuperpoint.moa_android.R
 import com.swuperpoint.moa_android.data.remote.model.home.HomeResponse
 import com.swuperpoint.moa_android.databinding.FragmentHomeBinding
@@ -58,6 +59,17 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.iBtnHomeNext.setOnClickListener {
             homeViewModel.moveToNextGathering()
         }
+
+        // 모임정보 더보기 버튼 클릭
+        binding.btnHomeMoreInfo.setOnClickListener {
+            homeViewModel.gatheringInfo.value?.let { gathering ->
+                val actionToGatheringInfo = HomeFragmentDirections.actionHomeFrmToGatheringInfoFrm(
+                    gatheringId = gathering.gatheringId,
+                    groupId = gathering.groupId
+                )
+                findNavController().navigate(actionToGatheringInfo)
+            }
+        }
     }
 
     // VM 업데이트 관찰
@@ -88,7 +100,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             binding.tvHomeGroupName.text = gatheringInfo.groupName
             binding.tvHomeGatheringName.text = gatheringInfo.gatheringName
             binding.tvHomeTime.text = gatheringInfo.date
-            binding.tvHomeLocation.text = gatheringInfo.location
+            binding.tvHomeLocation.text = gatheringInfo.placeName
             binding.tvHomeDday.text = gatheringInfo.dDay.toString()
         }
 

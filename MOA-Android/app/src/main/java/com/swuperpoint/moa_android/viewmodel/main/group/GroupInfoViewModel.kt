@@ -122,24 +122,62 @@ class GroupInfoViewModel: ViewModel() {
     }
 
     private fun fetchGroupMembers(groupId: String, callback: (ArrayList<MemberResponse>) -> Unit) {
+        val memberList = ArrayList<MemberResponse>()
+
+        // groups 컬렉션에서 해당 그룹 문서 가져오기
         db.collection("groups")
             .document(groupId)
-            .collection("members")
             .get()
-            .addOnSuccessListener { querySnapshot ->
-                val memberList = ArrayList<MemberResponse>()
-                for (document in querySnapshot.documents) {
-                    val member = MemberResponse(
-                        memberId = document.id,
-                        profileImgURL = document.getString("profile") ?: "",
-                        memberName = document.getString("nickname") ?: ""
-                    )
-                    memberList.add(member)
+            .addOnSuccessListener { groupDoc ->
+                // 그룹 문서에서 memberUIDs 배열 가져오기(그룹장 포함)
+                val creatorUID = groupDoc.getString("createdBy")
+                val memberUIDs = groupDoc.get("memberUIDs") as? List<String> ?: listOf()
+
+                var completedQueries = 0
+
+                if (memberUIDs.isEmpty()) {
+                    // memberUIDs가 비어있으면 빈 리스트 반환
+                    callback(memberList)
+                    return@addOnSuccessListener
                 }
-                callback(memberList)
+
+                // memberUIDs의 각 uid에 대해 users 컬렉션에서 상세 정보 조회
+                memberUIDs.forEach { uid ->
+                    db.collection("users")
+                        .document(uid)
+                        .get()
+                        .addOnSuccessListener { userDoc ->
+                            if (userDoc.exists()) {
+                                // users 컬렉션에서 가져온 사용자 정보로 MemberResponse 객체 생성
+                                val member = MemberResponse(
+                                    memberId = userDoc.id,
+                                    profileImgURL = userDoc.getString("profile") ?: "",
+                                    memberName = userDoc.getString("nickname") ?: ""
+                                )
+                                memberList.add(member)
+                            }
+
+                            completedQueries++
+                            // 모든 memberUIDs 처리가 완료되면 최종 리스트 전달
+                            if (completedQueries == memberUIDs.size) {
+                                // 그룹장이 맨 위로 오도록 정렬한 뒤 콜백
+                                val sortedList = ArrayList(memberList.sortedWith(
+                                    compareBy<MemberResponse> { it.memberId != creatorUID }
+                                        .thenBy { it.memberName } // 이름순
+                                ))
+                                callback(sortedList)
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            completedQueries++
+                            if (completedQueries == memberUIDs.size) {
+                                callback(memberList)
+                            }
+                        }
+                }
             }
             .addOnFailureListener { e ->
-                Log.e("GroupInfoViewModel", "Error fetching members", e)
+                Log.e("GroupInfoViewModel", "그룹 정보 조회 실패", e)
                 callback(ArrayList())
             }
     }

@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.swuperpoint.moa_android.R
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -62,9 +63,20 @@ data class StationEvaluation(
 class MidpointCalculator(private val context: Context) {
     private val odsayApiKey = context.getString(R.string.odsay_api_key)
 
-    suspend fun findBestStation(coords: List<Coordinate>): StationEvaluation? = withContext(Dispatchers.IO) {
+    // 핫플레이스 역 목록
+    private val hotplaceStations = setOf(
+        "강남", "혜화", "잠실", "홍대입구", "합정", "상수", "안암", "신촌", "광화문", "여의나루",
+        "뚝섬유원지", "서울숲", "건대입구", "이태원", "신사", "성수", "망원", "연남", "이대", "종로3가",
+        "서울대입구", "고속터미널", "압구정", "역삼", "노량진", "공덕", "왕십리", "대학로", "사당", "천호",
+        "문래", "강변", "신림", "선릉", "구로디지털단지", "회기", "석계", "청량리", "응암", "마포구청"
+    )
+
+
+    suspend fun findBestStation(coords: List<Coordinate>): List<StationEvaluation> = withContext(Dispatchers.IO) {
         try {
+            Log.d("MidpointCalculator", "Input coordinates: $coords")
             Log.d("MidpointCalculator", "Starting findBestStation with ${coords.size} coordinates")
+
             val centerPoint = calculateCenterPoint(coords)
             var stations = emptyList<Station>()
 
@@ -79,33 +91,69 @@ class MidpointCalculator(private val context: Context) {
 
             val evaluations = stations.mapNotNull { station ->
                 evaluateStation(station, coords)
-            }
+            }.filter {
+                it.maxTime <= 60
+            }.sortedBy {
+                it.avgTime - it.transferScore
+            }.take(5)
 
             if (evaluations.isEmpty()) {
                 throw Exception("평가 가능한 역을 찾을 수 없습니다.")
             }
 
-            evaluations.reduce { best, current ->
-                when {
-                    current.maxTime > 60 -> best
-                    best.maxTime > 60 -> current
-                    abs(best.deviation - current.deviation) > 15 ->
-                        if (best.deviation < current.deviation) best else current
-                    else -> {
-                        val bestScore = best.avgTime - best.transferScore
-                        val currentScore = current.avgTime - current.transferScore
-                        if (bestScore < currentScore) best else current
-                    }
-                }
-            }
+            evaluations  // 상위 5개 역을 그대로 반환
         } catch (e: Exception) {
             Log.e("MidpointCalculator", "Error in findBestStation", e)
-            null
+            emptyList()
+        }
+    }
+
+    // 핫플레이스 찾기 함수 추가
+    suspend fun findHotplaceStation(coordinates: List<Coordinate>): List<StationEvaluation> {
+        try {
+            val centerPoint = calculateCenterPoint(coordinates)
+            var stations = emptyList<Station>()
+
+            // 반경을 늘려가며 역 검색
+            for (radius in listOf(1000, 2000, 3000, 5000)) {
+                // 주변 역을 가져올 때 핫플레이스만 필터링
+                stations = getNearbyStations(centerPoint, radius).filter { station ->
+                    hotplaceStations.any { hotplace ->
+                        station.name.contains(hotplace)
+                    }
+                }
+                if (stations.isNotEmpty()) break
+            }
+
+            if (stations.isEmpty()) {
+                throw Exception("이 중간 지점에서 가장 가까운 핫플레이스를 찾지 못했어요.")
+            }
+
+            // 핫플레이스 역들 평가
+            val evaluations = stations.mapNotNull { station ->
+                evaluateStation(station, coordinates)
+            }.filter {
+                it.maxTime <= 60
+            }.sortedBy {
+                it.avgTime - it.transferScore
+            }
+
+            if (evaluations.isEmpty()) {
+                throw Exception("이 중간 지점에서 가장 가까운 핫플레이스를 찾지 못했어요.")
+            }
+
+            return evaluations
+        } catch (e: Exception) {
+            Log.e("MidpointCalculator", "핫플레이스 역 찾기 오류 발생", e)
+            throw e
         }
     }
 
     private suspend fun getTransitInfo(origin: Coordinate, dest: Coordinate): TransitPath? = withContext(Dispatchers.IO) {
         try {
+            // API 요청 전 짧은 딜레이 추가
+            delay(1000)
+
             val urlString = buildString {
                 append("https://api.odsay.com/v1/api/searchPubTransPath?")
                 append("apiKey=${URLEncoder.encode(odsayApiKey, "UTF-8")}")
@@ -125,6 +173,13 @@ class MidpointCalculator(private val context: Context) {
 
             val gson = Gson()
             val odsayResponse = gson.fromJson(response, ODsayPathResponse::class.java)
+
+            // 에러 응답 체크 추가
+            if (response.contains("\"error\"")) {
+                Log.e("MidpointCalculator", "API Error Response: $response")
+                return@withContext null
+            }
+
             val path = odsayResponse.result?.path?.firstOrNull() ?: return@withContext null
 
             TransitPath(
@@ -132,20 +187,25 @@ class MidpointCalculator(private val context: Context) {
                 transitCount = path.info.busTransitCount + path.info.subwayTransitCount,
                 walkTime = path.info.totalWalk,
                 payment = path.info.payment,
-                pathDetails = path.subPath.map { subPath ->
-                    PathDetail(
-                        type = subPath.trafficType,
-                        distance = subPath.distance,
-                        sectionTime = subPath.sectionTime,
-                        stationCount = subPath.stationCount,
-                        startName = subPath.startName,
-                        endName = subPath.endName,
-                        lineName = subPath.lane?.firstOrNull()?.name ?: ""
-                    )
+                pathDetails = path.subPath.mapNotNull { subPath ->  // map 대신 mapNotNull 사용
+                    try {
+                        PathDetail(
+                            type = subPath.trafficType,
+                            distance = subPath.distance,
+                            sectionTime = subPath.sectionTime,
+                            stationCount = subPath.stationCount,
+                            startName = subPath.startName ?: "Unknown",
+                            endName = subPath.endName ?: "Unknown",
+                            lineName = subPath.lane?.firstOrNull()?.name ?: ""
+                        )
+                    } catch (e: Exception) {
+                        Log.e("MidpointCalculator", "경로 상세 정보 생성 중 오류 발생", e)
+                        null
+                    }
                 }
             )
         } catch (e: Exception) {
-            Log.e("MidpointCalculator", "Error in getTransitInfo", e)
+            Log.e("MidpointCalculator", "대중교통 정보 조회 중 오류 발생", e)
             null
         }
     }

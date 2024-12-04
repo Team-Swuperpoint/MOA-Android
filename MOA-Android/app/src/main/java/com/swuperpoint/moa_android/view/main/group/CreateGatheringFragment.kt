@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.prolificinteractive.materialcalendarview.CalendarDay
@@ -25,6 +26,7 @@ import java.util.Calendar
 /* 모임 만들기 화면 */
 class CreateGatheringFragment : BaseFragment<FragmentCreateGatheringBinding>(FragmentCreateGatheringBinding::inflate) {
     private val db = Firebase.firestore
+    private val auth = Firebase.auth
     private var isEnable = false // 만들기 버튼 활성화 여부
     private lateinit var selectDate: LocalDate // 현재 사용자가 선택 중인 날짜
     private var groupId: String = "" // 그룹id(pk), String 타입으로 변경
@@ -102,7 +104,9 @@ class CreateGatheringFragment : BaseFragment<FragmentCreateGatheringBinding>(Fra
                     "gatheringEndTime" to binding.tvCreateGatheringEndTime.text.toString(),     // 종료 시간 추가
                     // TODO: location 필드 추가
                     "gatheringImgURL" to "",
-                    "createdAt" to com.google.firebase.Timestamp.now()
+                    "createdAt" to com.google.firebase.Timestamp.now(),
+                    "createdBy" to auth.currentUser?.uid,  // 생성자 UID 추가
+                    "participants" to listOf(auth.currentUser?.uid)  // 참여자 목록에 생성자 UID 추가
                 )
 
                 db.collection("groups")

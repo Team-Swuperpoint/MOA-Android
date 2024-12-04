@@ -129,6 +129,7 @@
                     android:layout_marginStart="8dp"
                     tools:text="10분"/>
                 <TextView
+                    android:id="@+id/tv_gathering_info_subway"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/Pretendard_SubTitle2"
@@ -181,8 +182,21 @@
                     android:layout_marginTop="4dp"/>
             </LinearLayout>
 
-            <!-- TODO: 중간 지점 경로가 있을 때 -->
-            <!-- TODO: 카카오 지도 API 띄우기 -->
+            <!-- 중간 지점 경로가 있을 때 -->
+            <!-- 카카오 지도 API 띄우기 -->
+            <FrameLayout
+                android:id="@+id/map_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+                <com.kakao.vectormap.MapView
+                    android:id="@+id/mapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginHorizontal="16dp"/>
+            </FrameLayout>
         </LinearLayout>
     </LinearLayout>
 </layout>

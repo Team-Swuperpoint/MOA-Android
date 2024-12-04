@@ -74,10 +74,10 @@ class CreateTimelineFragment : BaseFragment<FragmentCreateTimelineBinding>(Fragm
         // 그룹 클릭 이벤트
         binding.spinnerCreateTimelineGroup.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                for (i in 0 until groupSpinnerAdapter.count) {
-                    if (i == position) {
-                        selectedGroupId = groupSpinnerAdapter.getItem(position)?.groupId.toString()
-                    }
+                groupSpinnerAdapter.getItem(position)?.let { group ->
+                    selectedGroupId = group.groupId
+                    // 선택된 그룹의 모임 목록을 가져옴
+                    viewModel.fetchGatheringsForGroup(selectedGroupId)
                 }
 
                 // 버튼 색상 전환 여부 확인
@@ -86,16 +86,16 @@ class CreateTimelineFragment : BaseFragment<FragmentCreateTimelineBinding>(Fragm
 
             // 아무것도 선택 안 했을 경우
             override fun onNothingSelected(parent: AdapterView<*>?) {
+                selectedGroupId = ""
+                updateButtonUI()
             }
         }
 
         // 모임 클릭 이벤트
         binding.spinnerCreateTimelineGathering.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                for (i in 0 until gatheringSpinnerAdapter.count) {
-                    if (i == position) {
-                        selectedGatheringId = gatheringSpinnerAdapter.getItem(position)?.gatheringId.toString()
-                    }
+                gatheringSpinnerAdapter.getItem(position)?.let { gathering ->
+                    selectedGatheringId = gathering.gatheringId
                 }
 
                 // 버튼 색상 전환 여부 확인
@@ -104,6 +104,8 @@ class CreateTimelineFragment : BaseFragment<FragmentCreateTimelineBinding>(Fragm
 
             // 아무것도 선택 안 했을 경우
             override fun onNothingSelected(parent: AdapterView<*>?) {
+                selectedGatheringId = ""
+                updateButtonUI()
             }
         }
 
@@ -122,10 +124,19 @@ class CreateTimelineFragment : BaseFragment<FragmentCreateTimelineBinding>(Fragm
         binding.btnCreateTimelineCreate.setOnClickListener {
             Log.d("타임라인 데이터", "selectedGroupId: $selectedGroupId, selectedGatheringId: $selectedGatheringId, photos: ${photoAdapter.getPhotos()}")
             if (isEnable) {
-                // TODO: 타임라인 만들기 API 호출
-                // TODO: 타임라인 만들기에 성공했다면, 응답 값으로 타임라인id 반환 및 타임라인 정보 화면으로 이동
-                val actionToTimelineInfo = CreateTimelineFragmentDirections.actionCreateTimelineFrmToTimelineInfoFrm(timelineId = "0")
-                findNavController().navigate(actionToTimelineInfo)
+                // 타임라인 생성 함수 호출
+                viewModel.createTimeline(
+                    groupId = selectedGroupId,
+                    groupName = groupSpinnerAdapter.getItem(binding.spinnerCreateTimelineGroup.selectedItemPosition)?.groupName ?: "",
+                    gatheringId = selectedGatheringId,
+                    gatheringName = gatheringSpinnerAdapter.getItem(binding.spinnerCreateTimelineGathering.selectedItemPosition)?.gatheringName ?: "",
+                    photoUris = photoAdapter.getPhotos(),
+                    context = requireContext(),
+                    onSuccess = { timelineId ->
+                        val actionToTimelineInfo = CreateTimelineFragmentDirections.actionCreateTimelineFrmToTimelineInfoFrm(timelineId)
+                        findNavController().navigate(actionToTimelineInfo)
+                    }
+                )
             }
         }
     }

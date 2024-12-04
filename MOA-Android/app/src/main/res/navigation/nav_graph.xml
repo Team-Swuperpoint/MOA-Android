@@ -12,6 +12,10 @@
         android:name="com.swuperpoint.moa_android.view.main.home.HomeFragment"
         android:label="frm_home"
         tools:layout="@layout/fragment_home">
+        <!-- 모임 정보 더보기 -->
+        <action
+            android:id="@+id/action_homeFrm_to_gatheringInfoFrm"
+            app:destination="@id/frm_gathering_info"/>
     </fragment>
 
     <!-- 그룹 -->
@@ -203,7 +207,11 @@
             android:id="@+id/action_groupJoinBottomSheetFrm_to_groupFrm"
             app:destination="@id/frm_group"
             app:popUpTo="@id/frm_group"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true">
+            <argument
+                android:name="groupId"
+                app:argType="string" />
+        </action>
     </dialog>
 
     <!-- 그룹 정보 화면 내 더보기 바텀 시트 -->
