@@ -12,6 +12,7 @@ data class TimelineInfoResponse(
 /* 타임라인 정보 화면의 사진 리스트 응답 모델 */
 data class TimelinePhotoResponse(
     val time: String, // 시간 ex. 오전 8시 19분, 오후 12시 24분 등
-    val placeName: String, // 장소 이름
+    val latitude: Double?, // 위도
+    val longitude: Double?, // 경도
     val photoList: ArrayList<String> // 사진 리스트
 )
