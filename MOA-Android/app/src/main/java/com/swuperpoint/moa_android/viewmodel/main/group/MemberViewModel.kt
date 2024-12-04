@@ -64,7 +64,6 @@ class MemberViewModel: ViewModel() {
 
                             completedQueries++
 
-                            // 모든 멤버 정보 조회가 완료되면 UI 업데이트
                             if (completedQueries == memberUIDs.size) {
                                 val memberItems = membersList.map { member ->
                                     MemberItem(
@@ -75,7 +74,6 @@ class MemberViewModel: ViewModel() {
                                         isCreator = member.memberId == creatorUID,
                                         isCurrentUser = member.memberId == currentUserUid
                                     )
-                                    // 그룹장이 맨 위로 오도록 정렬, 그 다음은 이름순
                                 }.sortedWith(compareBy<MemberItem> { !it.isCreator }
                                     .thenBy { it.memberName })
 
@@ -88,38 +86,51 @@ class MemberViewModel: ViewModel() {
 
     fun deleteMember(groupId: String, position: Int) {
         val memberToDelete = memberList.value?.get(position) ?: return
+        val currentUserUid = auth.currentUser?.uid ?: return
 
-        // 그룹장 본인은 삭제 불가
-        if (memberToDelete.isCreator && memberToDelete.isCurrentUser) {
-            _deleteResult.value = false
-            _deleteErrorMessage.value = "그룹장은 삭제할 수 없습니다!"
-            return
-        }
-
-        // memberUIDs 배열과 members 컬렉션 모두 업데이트
+        // 그룹 정보 먼저 확인
         db.collection("groups")
             .document(groupId)
             .get()
             .addOnSuccessListener { groupDoc ->
+                val creatorUID = groupDoc.getString("createdBy")
+
+                // 삭제 권한 체크
+                when {
+                    // 그룹장을 삭제하려는 경우
+                    memberToDelete.memberId == creatorUID -> {
+                        _deleteResult.value = false
+                        _deleteErrorMessage.value = "그룹장은 삭제할 수 없습니다."
+                        return@addOnSuccessListener
+                    }
+                    // 그룹장이 아닌 사용자가 다른 멤버를 삭제하려는 경우
+                    currentUserUid != creatorUID -> {
+                        _deleteResult.value = false
+                        _deleteErrorMessage.value = "그룹장만 멤버를 삭제할 수 있습니다."
+                        return@addOnSuccessListener
+                    }
+                }
+
+                // 그룹장이 일반 멤버를 삭제하는 경우
                 val memberUIDs = groupDoc.get("memberUIDs") as? MutableList<String> ?: mutableListOf()
                 memberUIDs.remove(memberToDelete.memberId)
 
                 // 트랜잭션으로 두 작업 동시 처리
                 db.runTransaction { transaction ->
                     // memberUIDs 업데이트
-                    transaction.update(db.collection("groups").document(groupId), "memberUIDs", memberUIDs)
+                    transaction.update(db.collection("groups").document(groupId),
+                        "memberUIDs", memberUIDs)
 
                     // members 컬렉션에서도 삭제
                     transaction.delete(db.collection("groups").document(groupId)
                         .collection("members").document(memberToDelete.memberId))
-                }
-                    .addOnSuccessListener {
-                        _deleteResult.value = true
-                        fetchMembers(groupId)
-                }
-                    .addOnFailureListener { e ->
-                        Log.e("MemberViewModel", "멤버 삭제 실패", e)
-                        _deleteResult.value = false
+                }.addOnSuccessListener {
+                    _deleteResult.value = true
+                    fetchMembers(groupId)
+                }.addOnFailureListener { e ->
+                    Log.e("MemberViewModel", "멤버 삭제 실패", e)
+                    _deleteResult.value = false
+                    _deleteErrorMessage.value = "멤버 삭제에 실패했습니다."
                 }
             }
     }
