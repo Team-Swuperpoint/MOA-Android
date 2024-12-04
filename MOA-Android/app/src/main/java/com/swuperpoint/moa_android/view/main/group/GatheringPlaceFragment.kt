@@ -57,6 +57,11 @@ class GatheringPlaceFragment : BaseFragment<FragmentGatheringPlaceBinding>(Fragm
 
     @SuppressLint("SetTextI18n")
     private fun observeViewModel() {
+        // 그룹원 프로필 리스트 업데이트
+        viewModel.memberList.observe(viewLifecycleOwner) { members ->
+            memberAdapter.updateMembers(members)
+        }
+
         // 로딩 상태 관찰
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             // TODO: 로딩 UI 처리

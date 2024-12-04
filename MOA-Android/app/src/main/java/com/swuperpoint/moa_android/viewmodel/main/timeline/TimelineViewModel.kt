@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.swuperpoint.moa_android.data.remote.model.timeline.TimelineResponse
@@ -12,16 +13,22 @@ import com.swuperpoint.moa_android.data.remote.model.timeline.TimelineResponse
 /* 타임라인 화면의 뷰모델 */
 class TimelineViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private val _response = MutableLiveData<ArrayList<TimelineResponse>>()
     val response: LiveData<ArrayList<TimelineResponse>> get() = _response
 
     // 타임라인 리스트
     var timelineList: LiveData<ArrayList<TimelineResponse>?> = _response.map { it }
 
+    fun getCurrentUserId(): String = auth.currentUser?.uid ?: ""
+
     fun fetchTimeline() {
+        val currentUserId = getCurrentUserId()
         val allTimelines = ArrayList<TimelineResponse>()
 
-        db.collection("groups").get()
+        db.collection("groups")
+            .whereArrayContains("members", currentUserId)
+            .get()
             .addOnSuccessListener { groupSnapshot ->
                 var completedGroups = 0
                 val totalGroups = groupSnapshot.size()
@@ -58,8 +65,13 @@ class TimelineViewModel : ViewModel() {
                                                     gatheringName = doc.getString("gatheringName") ?: "",
                                                     groupMemberNum = doc.getLong("groupMemberNum")?.toInt() ?: 0,
                                                     gatheringImgURL = doc.getString("gatheringImgURL") ?: "",
-                                                    createdAt = doc.getTimestamp("createdAt")
+                                                    createdAt = doc.getTimestamp("createdAt"),
+                                                    createdBy = doc.getString("createdBy") ?: ""
                                                 )
+
+                                                if (timeline.createdBy == currentUserId) {
+                                                    allTimelines.add(timeline)
+                                                }
                                                 allTimelines.add(timeline)
                                             } catch (e: Exception) {
                                                 Log.e("Timeline", "타임라인 데이터 처리 중 오류 발생: ${doc.id}", e)

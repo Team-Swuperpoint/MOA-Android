@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.tasks.await
@@ -44,6 +45,7 @@ import kotlin.coroutines.suspendCoroutine
 class CreateTimelineViewModel: ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
     private val _response = MutableLiveData<CreateTimelineInfoResponse>()
     val response: LiveData<CreateTimelineInfoResponse> get() = _response
@@ -56,7 +58,11 @@ class CreateTimelineViewModel: ViewModel() {
 
     // 그룹 목록 조회
     fun fetchCreateTimeline() {
-        db.collection("groups").get()
+        val currentUserId = auth.currentUser?.uid ?: ""
+
+        db.collection("groups")
+            .whereArrayContains("memberUIDs", currentUserId)  // 사용자가 속한 그룹만 필터링
+            .get()
             .addOnSuccessListener { groupSnapshot ->
                 val groups = ArrayList(groupSnapshot.documents.map { doc ->
                     CreateTimelineGroupResponse(
