@@ -21,6 +21,14 @@ class TimelineInfoViewModel: ViewModel() {
     val groupName: LiveData<String> = _response.map { it.groupName }
     val timelineList: LiveData<ArrayList<TimelinePhotoResponse>> = _response.map { it.timelineList }
 
+    private var groupId: String = ""
+    private var gatheringId: String = ""
+
+    fun setIds(groupId: String, gatheringId: String) {
+        this.groupId = groupId
+        this.gatheringId = gatheringId
+    }
+
     // 타임라인 상세 정보 조회
     fun fetchTimelineInfo(timelineId: String) {
         db.collection("groups").get()
@@ -34,6 +42,10 @@ class TimelineInfoViewModel: ViewModel() {
                                     .get()
                                     .addOnSuccessListener { timelineDoc ->
                                         if (timelineDoc.exists()) {
+                                            // ID 저장
+                                            groupId = groupDoc.id
+                                            gatheringId = gatheringDoc.id
+
                                             // 사진 목록 변환
                                             val photoList = ArrayList((timelineDoc.get("photos") as? List<Map<String, Any>>)?.map { photo ->
                                                 // 위도, 경도 값 추출
@@ -70,7 +82,11 @@ class TimelineInfoViewModel: ViewModel() {
     }
 
     // 타임라인 삭제
-    fun deleteTimeline(groupId: String, gatheringId: String, timelineId: String, onSuccess: () -> Unit) {
+    fun deleteTimeline(timelineId: String, onSuccess: () -> Unit) {
+        if (groupId.isEmpty() || gatheringId.isEmpty()) {
+            return
+        }
+
         db.collection("groups")
             .document(groupId)
             .collection("gatherings")
@@ -80,6 +96,9 @@ class TimelineInfoViewModel: ViewModel() {
             .delete()
             .addOnSuccessListener {
                 onSuccess()
+            }
+            .addOnFailureListener { e ->
+                Log.e("Timeline", "타임라인 삭제 실패", e)
             }
     }
 }

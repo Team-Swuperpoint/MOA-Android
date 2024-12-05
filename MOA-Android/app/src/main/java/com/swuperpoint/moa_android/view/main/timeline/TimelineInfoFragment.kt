@@ -56,11 +56,14 @@ class TimelineInfoFragment : BaseFragment<FragmentTimelineInfoBinding>(FragmentT
 
         // 삭제 버튼 클릭 이벤트
         binding.toolbarTimelineInfo.ivToolbarRight.setOnClickListener {
-            // TODO: 타임라인 삭제
-
-            // TODO: 타임라인 삭제에 성공했다면, 타임라인 화면으로 이동
-            val actionToTimeline = TimelineInfoFragmentDirections.actionTimelineInfoFrmToTimelineFrm()
-            findNavController().navigate(actionToTimeline)
+            viewModel.deleteTimeline(
+                timelineId = timelineId,
+                onSuccess = {
+                    // 삭제 성공 시 타임라인 화면으로 이동
+                    val actionToTimeline = TimelineInfoFragmentDirections.actionTimelineInfoFrmToTimelineFrm()
+                    findNavController().navigate(actionToTimeline)
+                }
+            )
         }
 
         // 어댑터 연결
