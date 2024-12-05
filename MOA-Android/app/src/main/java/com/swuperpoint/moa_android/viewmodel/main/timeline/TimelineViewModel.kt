@@ -27,14 +27,14 @@ class TimelineViewModel : ViewModel() {
         val allTimelines = ArrayList<TimelineResponse>()
 
         db.collection("groups")
-            .whereArrayContains("members", currentUserId)
             .get()
             .addOnSuccessListener { groupSnapshot ->
                 var completedGroups = 0
                 val totalGroups = groupSnapshot.size()
 
                 for (groupDoc in groupSnapshot.documents) {
-                    groupDoc.reference.collection("gatherings").get()
+                    groupDoc.reference.collection("gatherings")
+                        .get()
                         .addOnSuccessListener { gatheringSnapshot ->
                             var completedGatherings = 0
                             val totalGatherings = gatheringSnapshot.size()
@@ -50,16 +50,16 @@ class TimelineViewModel : ViewModel() {
                             // 각 모임의 타임라인 조회
                             for (gatheringDoc in gatheringSnapshot.documents) {
                                 gatheringDoc.reference.collection("timelines")
+                                    .whereEqualTo("createdBy", currentUserId)  // createdBy로 필터링
                                     .orderBy("createdAt", Query.Direction.DESCENDING)
                                     .get()
                                     .addOnSuccessListener { timelineSnapshot ->
                                         for (doc in timelineSnapshot.documents) {
                                             try {
-                                                Log.d("Timeline", "Processing timeline: ${doc.id}, createdAt: ${doc.getTimestamp("createdAt")}")
                                                 val timeline = TimelineResponse(
                                                     timelineId = doc.id,
                                                     date = doc.getString("date") ?: "",
-                                                    placeName = doc.getString("placeName") ?: "",  // root level placeName 사용
+                                                    placeName = doc.getString("placeName") ?: "",
                                                     groupId = groupDoc.id,
                                                     groupName = doc.getString("groupName") ?: "",
                                                     gatheringName = doc.getString("gatheringName") ?: "",
@@ -72,9 +72,8 @@ class TimelineViewModel : ViewModel() {
                                                 if (timeline.createdBy == currentUserId) {
                                                     allTimelines.add(timeline)
                                                 }
-                                                allTimelines.add(timeline)
                                             } catch (e: Exception) {
-                                                Log.e("Timeline", "타임라인 데이터 처리 중 오류 발생: ${doc.id}", e)
+                                                Log.e("Timeline", "타임라인 데이터 처리 오류: ${doc.id}", e)
                                             }
                                         }
 
